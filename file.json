@@ -1,0 +1,27 @@
+[
+    {
+        "layout": [
+            {
+                "path":"/dev/sda1",
+                "args": {
+                    "mountpoint": "/efi",
+                    "filesystem": "FAT32"
+                }
+            },
+            {
+                "path":"/dev/sda2",
+                "args": {
+                    "mountpoint": "/",
+                    "filesystem": "BTRFS"
+                }
+            },
+            {
+                "path":"/dev/sda3",
+                "args": {
+                    "mountpoint": "SWAP",
+                    "filesystem": "SWAP"
+                }
+            }
+        ]
+    }
+]
