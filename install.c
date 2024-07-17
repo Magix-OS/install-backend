@@ -95,9 +95,7 @@ void mountPartition(part part) {
     strcat(command, " /mnt/gentoo");
     strcat(command, part.mountPoint);
   }
-  printf("Executing %s\n", command);
-  command[0] = '\0';
-  // execProg(command);
+ execProg(command);
 }
 void formatPartition(part part) {
   char mkfsCommand[50];
@@ -122,9 +120,7 @@ void formatPartition(part part) {
   }
   strcat(command, mkfsCommand);
   strcat(command, part.partition);
-  printf("Executing %s\n", command);
-  command[0] = '\0';
-  // execProg(command);
+  execProg(command);
 }
 void initializeDirectories() {
   umount2("/mnt/gentoo/efi", MNT_FORCE);
@@ -162,10 +158,6 @@ void stage4DLandExtract() {
            errno);
     exit(EXIT_FAILURE);
   }
-  char *command =
-      malloc((strlen(urlBottom) + strlen(urlTop) + strlen("wget -v ") + 2) *
-             sizeof(char));
-  command[0] = '\0';
   strcat(command, "wget -v ");
   strcat(command, urlTop);
   strcat(command, urlBottom);
@@ -177,6 +169,7 @@ void stage4DLandExtract() {
   strcat(command2, "tar xpvf --xattrs-include='*.*' --numeric-owner ");
   strcat(command2, urlBottom);
   execProg(command2);
+  free(command2);
 }
 void jsonToPart(char *path) {
   json_t *root, *partition, *data, *layout, *paths, *args, *filesystem,
