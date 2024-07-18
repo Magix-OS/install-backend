@@ -24,22 +24,28 @@ typedef struct stage4 {
 typedef struct installType {
   enum privEscal { sudo, doas } privEscal;
   enum portage { binhost, source } portage;
-  bool bedrock;
-  enum stratas { arch, debian, fedora, ubuntu, voidlinux } stratas;
-  bool flatpak;
-  char *gpu;
-  int makeOptJ;
+  enum stratas { arch, debian, fedora, ubuntu, voidlinux } stratas[5];
   stage4 stage4;
+  bool gpus[8];
+  int makeOptJ;
   int makeOptL;
+  bool bedrock;
+  bool flatpak;
   bool isUefi;
   char *timezone;
+  char *locales;
   char *locale;
+  char *keyboard;
+  char *username;
+  char *hostname;
+  char *userpasswd;
+  char *rootpasswd;
 } installType;
 
 // Global variables
 part currentPartition;
 char command[100];
-
+installType currentInstall;
 // Shamelessly stolen from
 // https://github.com/kernaltrap8/tinyfetch/blob/main/src/tinyfetch.c
 int file_parser(const char *file, const char *line_to_read) {
@@ -95,7 +101,7 @@ void mountPartition(part part) {
     strcat(command, " /mnt/gentoo");
     strcat(command, part.mountPoint);
   }
- execProg(command);
+  execProg(command);
 }
 void formatPartition(part part) {
   char mkfsCommand[50];
@@ -171,11 +177,93 @@ void stage4DLandExtract() {
   execProg(command2);
   free(command2);
 }
+void jsonToConf(char *path) {
+  json_t *gpus, *stratas, *locales, *config, *root, *data;
+  json_error_t error;
+  root = json_load_file(path, 0, &error);
+  if (!root)
+    exit(EXIT_FAILURE);
+  if (!json_is_array(root)) {
+    fprintf(stderr, "error: root is not an array\n");
+    json_decref(root);
+    exit(EXIT_FAILURE);
+  }
+  data = json_array_get(root, 0);
+  if (!json_is_object(data)) {
+    fprintf(stderr, "error : not an object\n");
+    json_decref(root);
+    exit(EXIT_FAILURE);
+  }
+  config = json_object_get(data, "config");
+  if (!json_is_object(config)) {
+    fprintf(stderr, "error: is not a array\n");
+    json_decref(root);
+    exit(EXIT_FAILURE);
+  }
+  currentInstall.privEscal =
+      json_boolean_value(json_object_get(config, "privEscal"));
+  currentInstall.portage =
+      json_boolean_value(json_object_get(config, "portage"));
+  currentInstall.stage4.init =
+      json_boolean_value(json_object_get(config, "init"));
+  currentInstall.stage4.desktop =
+      json_integer_value(json_object_get(config, "desktop"));
+  currentInstall.makeOptJ =
+      json_integer_value(json_object_get(config, "makeOptJ"));
+  currentInstall.makeOptL =
+      json_integer_value(json_object_get(config, "makeOptL"));
+  currentInstall.bedrock =
+      json_boolean_value(json_object_get(config, "bedrock"));
+  currentInstall.flatpak =
+      json_boolean_value(json_object_get(config, "flatpak"));
+  currentInstall.timezone =
+      (char *)json_string_value(json_object_get(config, "timezone"));
+  currentInstall.locale =
+      (char *)json_string_value(json_object_get(config, "locale"));
+  currentInstall.keyboard =
+      (char *)json_string_value(json_object_get(config, "keyboard"));
+  currentInstall.username =
+      (char *)json_string_value(json_object_get(config, "username"));
+  currentInstall.hostname =
+      (char *)json_string_value(json_object_get(config, "hostname"));
+  currentInstall.userpasswd =
+      (char *)json_string_value(json_object_get(config, "passwd"));
+  currentInstall.rootpasswd =
+      (char *)json_string_value(json_object_get(config, "rootpasswd"));
+  locales = json_object_get(config, "locales");
+  if (!json_is_array(locales)) {
+    fprintf(stderr, "error: is not a array\n");
+    json_decref(root);
+    exit(EXIT_FAILURE);
+  }
+  for (int i = 0; i < json_array_size(locales); i++) {
+    strcat(currentInstall.locales,
+           json_string_value(json_array_get(locales, i)));
+    strcat(currentInstall.locale, "\n");
+  }
+  stratas = json_object_get(config, "stratas");
+  if (!json_is_array(stratas)) {
+    fprintf(stderr, "error: is not a array\n");
+    json_decref(root);
+    exit(EXIT_FAILURE);
+  }
+  for (int i = 0; i < json_array_size(stratas); i++)
+    currentInstall.stratas[i] = json_boolean_value(json_array_get(stratas, i));
+
+  gpus = json_object_get(config, "gpus");
+  if (!json_is_array(gpus)) {
+    fprintf(stderr, "error: is not a array\n");
+    json_decref(root);
+    exit(EXIT_FAILURE);
+  }
+  for (int i = 0; i < json_array_size(gpus); i++)
+    currentInstall.gpus[i] = json_boolean_value(json_array_get(gpus, i));
+  json_decref(root);
+}
 void jsonToPart(char *path) {
   json_t *root, *partition, *data, *layout, *paths, *args, *filesystem,
       *mountpoint;
   json_error_t error;
-  const char *layout_text;
   root = json_load_file(path, 0, &error);
   if (!root)
     exit(EXIT_FAILURE);
@@ -213,5 +301,6 @@ void jsonToPart(char *path) {
     formatPartition(currentPartition);
     mountPartition(currentPartition);
   }
+  json_decref(root);
 }
-int main(int argc, char *argv[]) { jsonToPart(argv[1]); }
+int main(int argc, char *argv[]) {}
