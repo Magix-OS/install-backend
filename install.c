@@ -15,6 +15,7 @@ typedef struct part {
   char *partition;
   char *mountPoint;
   char *fileSystem;
+  bool wipe;
 } part;
 typedef struct stage4 {
   enum init { OpenRC, SystemD } init;
@@ -139,15 +140,15 @@ void initializeDirectories() {
     exit(EXIT_FAILURE);
   }
 }
-int isUEFI() {
+bool isUEFI() {
   DIR *dir = opendir("/sys/firmware/efi");
   if (dir) {
     closedir(dir);
     printf("UEFI system detected\n");
-    return 0;
+    return true;
   } else if (ENOENT == errno) {
     printf("BIOS system detected\n");
-    return 1;
+    return false;
   } else {
     printf("Errno :%d, cant detect if system is UEFI or BIOS\n", errno);
     exit(EXIT_FAILURE);
@@ -200,6 +201,7 @@ void jsonToConf(char *path) {
     json_decref(root);
     exit(EXIT_FAILURE);
   }
+  currentInstall.isUefi = isUEFI();
   currentInstall.privEscal =
       json_boolean_value(json_object_get(config, "privEscal"));
   currentInstall.portage =
@@ -264,6 +266,7 @@ void jsonToPart(char *path) {
   json_t *root, *partition, *data, *layout, *paths, *args, *filesystem,
       *mountpoint;
   json_error_t error;
+  bool wipe;
   root = json_load_file(path, 0, &error);
   if (!root)
     exit(EXIT_FAILURE);
@@ -295,10 +298,12 @@ void jsonToPart(char *path) {
     paths = json_object_get(partition, "path");
     filesystem = json_object_get(args, "filesystem");
     mountpoint = json_object_get(args, "mountpoint");
+    wipe = json_boolean_value(json_object_get(args, "wipe"));
     currentPartition.partition = (char *)json_string_value(paths);
     currentPartition.fileSystem = (char *)json_string_value(filesystem);
     currentPartition.mountPoint = (char *)json_string_value(mountpoint);
-    formatPartition(currentPartition);
+    if (wipe)
+      formatPartition(currentPartition);
     mountPartition(currentPartition);
   }
   json_decref(root);
