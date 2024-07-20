@@ -144,12 +144,10 @@ bool isUEFI() {
   DIR *dir = opendir("/sys/firmware/efi");
   if (dir) {
     closedir(dir);
-    printf("UEFI system detected\n");
     return true;
-  } else if (ENOENT == errno) {
-    printf("BIOS system detected\n");
+  } else if (ENOENT == errno)
     return false;
-  } else {
+  else {
     printf("Errno :%d, cant detect if system is UEFI or BIOS\n", errno);
     exit(EXIT_FAILURE);
   }
@@ -218,30 +216,59 @@ void jsonToConf(char *path) {
       json_boolean_value(json_object_get(config, "bedrock"));
   currentInstall.flatpak =
       json_boolean_value(json_object_get(config, "flatpak"));
-  currentInstall.timezone =
-      (char *)json_string_value(json_object_get(config, "timezone"));
-  currentInstall.locale =
-      (char *)json_string_value(json_object_get(config, "locale"));
-  currentInstall.keyboard =
-      (char *)json_string_value(json_object_get(config, "keyboard"));
-  currentInstall.username =
-      (char *)json_string_value(json_object_get(config, "username"));
-  currentInstall.hostname =
-      (char *)json_string_value(json_object_get(config, "hostname"));
-  currentInstall.userpasswd =
-      (char *)json_string_value(json_object_get(config, "passwd"));
-  currentInstall.rootpasswd =
-      (char *)json_string_value(json_object_get(config, "rootpasswd"));
+  currentInstall.timezone = (char *)malloc(
+      sizeof(char) *
+      (1 + strlen(json_string_value(json_object_get(config, "timezone")))));
+  strcpy(currentInstall.timezone,
+         json_string_value(json_object_get(config, "timezone")));
+  currentInstall.locale = (char *)malloc(
+      sizeof(char) *
+      (1 + strlen(json_string_value(json_object_get(config, "locale")))));
+  strcpy(currentInstall.locale,
+         json_string_value(json_object_get(config, "locale")));
+  currentInstall.keyboard = (char *)malloc(
+      sizeof(char) *
+      (1 + strlen(json_string_value(json_object_get(config, "keyboard")))));
+  strcpy(currentInstall.keyboard,
+         json_string_value(json_object_get(config, "keyboard")));
+  currentInstall.username = (char *)malloc(
+      sizeof(char) *
+      (1 + strlen(json_string_value(json_object_get(config, "username")))));
+  strcpy(currentInstall.username,
+         json_string_value(json_object_get(config, "username")));
+  currentInstall.hostname = (char *)malloc(
+      sizeof(char) *
+      (1 + strlen(json_string_value(json_object_get(config, "hostname")))));
+  strcpy(currentInstall.hostname,
+         json_string_value(json_object_get(config, "hostname")));
+  currentInstall.userpasswd = (char *)malloc(
+      sizeof(char) *
+      (1 + strlen(json_string_value(json_object_get(config, "passwd")))));
+  strcpy(currentInstall.userpasswd,
+         json_string_value(json_object_get(config, "passwd")));
+  currentInstall.rootpasswd = (char *)malloc(
+      sizeof(char) *
+      (1 + strlen(json_string_value(json_object_get(config, "rootpasswd")))));
+  strcpy(currentInstall.rootpasswd,
+         json_string_value(json_object_get(config, "rootpasswd")));
   locales = json_object_get(config, "locales");
   if (!json_is_array(locales)) {
     fprintf(stderr, "error: is not a array\n");
     json_decref(root);
     exit(EXIT_FAILURE);
   }
-  for (int i = 0; i < json_array_size(locales); i++) {
+  int localeLength = 0;
+  for (int i = 0; i < json_array_size(locales); i++)
+    localeLength = localeLength + 1 +
+                   strlen(json_string_value(json_array_get(locales, i)));
+
+  currentInstall.locales = (char *)malloc(sizeof(char) * (1 + localeLength));
+  sprintf(currentInstall.locales, "%s\n",
+          json_string_value(json_array_get(locales, 0)));
+  for (int i = 1; i < json_array_size(locales); i++) {
     strcat(currentInstall.locales,
            json_string_value(json_array_get(locales, i)));
-    strcat(currentInstall.locale, "\n");
+    strcat(currentInstall.locales, "\n\0");
   }
   stratas = json_object_get(config, "stratas");
   if (!json_is_array(stratas)) {
@@ -302,10 +329,17 @@ void jsonToPart(char *path) {
     currentPartition.partition = (char *)json_string_value(paths);
     currentPartition.fileSystem = (char *)json_string_value(filesystem);
     currentPartition.mountPoint = (char *)json_string_value(mountpoint);
-    if (wipe)
-      formatPartition(currentPartition);
-    mountPartition(currentPartition);
+    printf("Partition : %s \n MountPoint : %s \n Filesystem : %s",
+           currentPartition.partition, currentPartition.mountPoint,
+           currentPartition.fileSystem);
+    //    if (wipe)
+    //      formatPartition(currentPartition);
+    //   mountPartition(currentPartition);
   }
   json_decref(root);
 }
-int main(int argc, char *argv[]) {}
+int main(int argc, char *argv[]) {
+  jsonToPart(argv[1]);
+  jsonToConf(argv[1]);
+  return 0;
+}
