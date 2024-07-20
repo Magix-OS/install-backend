@@ -44,9 +44,7 @@ typedef struct installType {
 } installType;
 
 // Global variables
-part currentPartition;
 char command[100];
-installType currentInstall;
 // Shamelessly stolen from
 // https://github.com/kernaltrap8/tinyfetch/blob/main/src/tinyfetch.c
 int file_parser(const char *file, const char *line_to_read) {
@@ -176,8 +174,10 @@ void stage4DLandExtract() {
   execProg(command2);
   free(command2);
 }
-void jsonToConf(char *path) {
+installType jsonToConf(char *path) {
   json_t *gpus, *stratas, *locales, *config, *root, *data;
+
+  installType install;
   json_error_t error;
   root = json_load_file(path, 0, &error);
   if (!root)
@@ -199,57 +199,49 @@ void jsonToConf(char *path) {
     json_decref(root);
     exit(EXIT_FAILURE);
   }
-  currentInstall.isUefi = isUEFI();
-  currentInstall.privEscal =
-      json_boolean_value(json_object_get(config, "privEscal"));
-  currentInstall.portage =
-      json_boolean_value(json_object_get(config, "portage"));
-  currentInstall.stage4.init =
-      json_boolean_value(json_object_get(config, "init"));
-  currentInstall.stage4.desktop =
+  install.isUefi = isUEFI();
+  install.privEscal = json_boolean_value(json_object_get(config, "privEscal"));
+  install.portage = json_boolean_value(json_object_get(config, "portage"));
+  install.stage4.init = json_boolean_value(json_object_get(config, "init"));
+  install.stage4.desktop =
       json_integer_value(json_object_get(config, "desktop"));
-  currentInstall.makeOptJ =
-      json_integer_value(json_object_get(config, "makeOptJ"));
-  currentInstall.makeOptL =
-      json_integer_value(json_object_get(config, "makeOptL"));
-  currentInstall.bedrock =
-      json_boolean_value(json_object_get(config, "bedrock"));
-  currentInstall.flatpak =
-      json_boolean_value(json_object_get(config, "flatpak"));
-  currentInstall.timezone = (char *)malloc(
+  install.makeOptJ = json_integer_value(json_object_get(config, "makeOptJ"));
+  install.makeOptL = json_integer_value(json_object_get(config, "makeOptL"));
+  install.bedrock = json_boolean_value(json_object_get(config, "bedrock"));
+  install.flatpak = json_boolean_value(json_object_get(config, "flatpak"));
+  install.timezone = (char *)malloc(
       sizeof(char) *
       (1 + strlen(json_string_value(json_object_get(config, "timezone")))));
-  strcpy(currentInstall.timezone,
+  strcpy(install.timezone,
          json_string_value(json_object_get(config, "timezone")));
-  currentInstall.locale = (char *)malloc(
+  install.locale = (char *)malloc(
       sizeof(char) *
       (1 + strlen(json_string_value(json_object_get(config, "locale")))));
-  strcpy(currentInstall.locale,
-         json_string_value(json_object_get(config, "locale")));
-  currentInstall.keyboard = (char *)malloc(
+  strcpy(install.locale, json_string_value(json_object_get(config, "locale")));
+  install.keyboard = (char *)malloc(
       sizeof(char) *
       (1 + strlen(json_string_value(json_object_get(config, "keyboard")))));
-  strcpy(currentInstall.keyboard,
+  strcpy(install.keyboard,
          json_string_value(json_object_get(config, "keyboard")));
-  currentInstall.username = (char *)malloc(
+  install.username = (char *)malloc(
       sizeof(char) *
       (1 + strlen(json_string_value(json_object_get(config, "username")))));
-  strcpy(currentInstall.username,
+  strcpy(install.username,
          json_string_value(json_object_get(config, "username")));
-  currentInstall.hostname = (char *)malloc(
+  install.hostname = (char *)malloc(
       sizeof(char) *
       (1 + strlen(json_string_value(json_object_get(config, "hostname")))));
-  strcpy(currentInstall.hostname,
+  strcpy(install.hostname,
          json_string_value(json_object_get(config, "hostname")));
-  currentInstall.userpasswd = (char *)malloc(
+  install.userpasswd = (char *)malloc(
       sizeof(char) *
       (1 + strlen(json_string_value(json_object_get(config, "passwd")))));
-  strcpy(currentInstall.userpasswd,
+  strcpy(install.userpasswd,
          json_string_value(json_object_get(config, "passwd")));
-  currentInstall.rootpasswd = (char *)malloc(
+  install.rootpasswd = (char *)malloc(
       sizeof(char) *
       (1 + strlen(json_string_value(json_object_get(config, "rootpasswd")))));
-  strcpy(currentInstall.rootpasswd,
+  strcpy(install.rootpasswd,
          json_string_value(json_object_get(config, "rootpasswd")));
   locales = json_object_get(config, "locales");
   if (!json_is_array(locales)) {
@@ -262,13 +254,12 @@ void jsonToConf(char *path) {
     localeLength = localeLength + 1 +
                    strlen(json_string_value(json_array_get(locales, i)));
 
-  currentInstall.locales = (char *)malloc(sizeof(char) * (1 + localeLength));
-  sprintf(currentInstall.locales, "%s\n",
+  install.locales = (char *)malloc(sizeof(char) * (1 + localeLength));
+  sprintf(install.locales, "%s\n",
           json_string_value(json_array_get(locales, 0)));
   for (int i = 1; i < json_array_size(locales); i++) {
-    strcat(currentInstall.locales,
-           json_string_value(json_array_get(locales, i)));
-    strcat(currentInstall.locales, "\n\0");
+    strcat(install.locales, json_string_value(json_array_get(locales, i)));
+    strcat(install.locales, "\n\0");
   }
   stratas = json_object_get(config, "stratas");
   if (!json_is_array(stratas)) {
@@ -277,7 +268,7 @@ void jsonToConf(char *path) {
     exit(EXIT_FAILURE);
   }
   for (int i = 0; i < json_array_size(stratas); i++)
-    currentInstall.stratas[i] = json_boolean_value(json_array_get(stratas, i));
+    install.stratas[i] = json_boolean_value(json_array_get(stratas, i));
 
   gpus = json_object_get(config, "gpus");
   if (!json_is_array(gpus)) {
@@ -286,12 +277,64 @@ void jsonToConf(char *path) {
     exit(EXIT_FAILURE);
   }
   for (int i = 0; i < json_array_size(gpus); i++)
-    currentInstall.gpus[i] = json_boolean_value(json_array_get(gpus, i));
+    install.gpus[i] = json_boolean_value(json_array_get(gpus, i));
   json_decref(root);
+  return install;
 }
-void jsonToPart(char *path) {
+part jsonToPart(char *path, int i) {
   json_t *root, *partition, *data, *layout, *paths, *args, *filesystem,
       *mountpoint;
+  json_error_t error;
+  part part;
+  bool wipe;
+  root = json_load_file(path, 0, &error);
+  if (!root)
+    exit(EXIT_FAILURE);
+  if (!json_is_array(root)) {
+    fprintf(stderr, "error: root is not an array\n");
+    json_decref(root);
+    exit(EXIT_FAILURE);
+  }
+  data = json_array_get(root, 0);
+  if (!json_is_object(data)) {
+    fprintf(stderr, "error : not an object\n");
+    json_decref(root);
+    exit(EXIT_FAILURE);
+  }
+  layout = json_object_get(data, "layout");
+  if (!json_is_array(layout)) {
+    fprintf(stderr, "error: is not a array\n");
+    json_decref(root);
+    exit(EXIT_FAILURE);
+  }
+  partition = json_array_get(layout, i);
+  if (!json_is_object(partition)) {
+    fprintf(stderr, "error : not an object\n");
+    json_decref(root);
+    exit(EXIT_FAILURE);
+  }
+  args = json_object_get(partition, "args");
+  paths = json_object_get(partition, "path");
+  filesystem = json_object_get(args, "filesystem");
+  mountpoint = json_object_get(args, "mountpoint");
+  wipe = json_boolean_value(json_object_get(args, "wipe"));
+  part.partition =
+      (char *)malloc(sizeof(char) * (1 + strlen(json_string_value(paths))));
+  strcpy(part.partition, json_string_value(paths));
+  part.fileSystem = (char *)malloc(sizeof(char) *
+                                   (1 + strlen(json_string_value(filesystem))));
+  strcpy(part.fileSystem, json_string_value(filesystem));
+  part.mountPoint = (char *)malloc(sizeof(char) *
+                                   (1 + strlen(json_string_value(mountpoint))));
+  strcpy(part.mountPoint, json_string_value(mountpoint));
+
+  printf("Partition : %s \n MountPoint : %s \n Filesystem : %s\n",
+         part.partition, part.mountPoint, part.fileSystem);
+  json_decref(root);
+  return part;
+}
+int partitionsNumber(char *path) {
+  json_t *root, *data, *layout;
   json_error_t error;
   bool wipe;
   root = json_load_file(path, 0, &error);
@@ -314,32 +357,34 @@ void jsonToPart(char *path) {
     json_decref(root);
     exit(EXIT_FAILURE);
   }
-  for (int i = 0; i < json_array_size(layout); i++) {
-    partition = json_array_get(layout, i);
-    if (!json_is_object(partition)) {
-      fprintf(stderr, "error : not an object\n");
-      json_decref(root);
-      exit(EXIT_FAILURE);
-    }
-    args = json_object_get(partition, "args");
-    paths = json_object_get(partition, "path");
-    filesystem = json_object_get(args, "filesystem");
-    mountpoint = json_object_get(args, "mountpoint");
-    wipe = json_boolean_value(json_object_get(args, "wipe"));
-    currentPartition.partition = (char *)json_string_value(paths);
-    currentPartition.fileSystem = (char *)json_string_value(filesystem);
-    currentPartition.mountPoint = (char *)json_string_value(mountpoint);
-    printf("Partition : %s \n MountPoint : %s \n Filesystem : %s",
-           currentPartition.partition, currentPartition.mountPoint,
-           currentPartition.fileSystem);
-    //    if (wipe)
-    //      formatPartition(currentPartition);
-    //   mountPartition(currentPartition);
-  }
+  int num = json_array_size(layout);
   json_decref(root);
+  return num;
+}
+void freeInstall(installType install) {
+  free(install.hostname);
+  free(install.keyboard);
+  free(install.locale);
+  free(install.locales);
+  free(install.rootpasswd);
+  free(install.username);
+  free(install.userpasswd);
+  free(install.timezone);
+}
+void freePart(part part) {
+
+  free(part.mountPoint);
+  free(part.partition);
+  free(part.fileSystem);
 }
 int main(int argc, char *argv[]) {
-  jsonToPart(argv[1]);
-  jsonToConf(argv[1]);
+  part partition;
+  int partNum = partitionsNumber(argv[1]);
+  for (int i = 0; i < partNum; i++) {
+    partition = jsonToPart(argv[1], i);
+    freePart(partition);
+  }
+  installType install = jsonToConf(argv[1]);
+  freeInstall(install);
   return 0;
 }
