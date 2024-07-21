@@ -10,7 +10,8 @@
 #include <sys/mount.h>
 #include <sys/stat.h>
 #include <unistd.h>
-
+#define HOST                                                                   \
+  "https://distfiles.gentoo.org/releases/amd64/autobuilds/20240714T170402Z/"
 typedef struct part {
   char *partition;
   char *mountPoint;
@@ -152,8 +153,6 @@ bool isUEFI() {
 }
 // TODO: Add parameters to decide which one to download
 void stage4DLandExtract() {
-  char urlTop[] = "https://distfiles.gentoo.org/releases/amd64/autobuilds/"
-                  "20240714T170402Z/";
   char urlBottom[] = "stage3-amd64-openrc-20240714T170402Z.tar.xz";
   if (chdir("/mnt/gentoo") != 0) {
     printf("Error: %d, cant change directory to /mnt/gentoo, should work, but "
@@ -162,7 +161,7 @@ void stage4DLandExtract() {
     exit(EXIT_FAILURE);
   }
   strcat(command, "wget -v ");
-  strcat(command, urlTop);
+  strcat(command, HOST);
   strcat(command, urlBottom);
   execProg(command);
   char *command2 =
@@ -327,9 +326,7 @@ part jsonToPart(char *path, int i) {
   part.mountPoint = (char *)malloc(sizeof(char) *
                                    (1 + strlen(json_string_value(mountpoint))));
   strcpy(part.mountPoint, json_string_value(mountpoint));
-
-  printf("Partition : %s \n MountPoint : %s \n Filesystem : %s\n",
-         part.partition, part.mountPoint, part.fileSystem);
+  part.wipe = wipe;
   json_decref(root);
   return part;
 }
@@ -380,8 +377,14 @@ void freePart(part part) {
 int main(int argc, char *argv[]) {
   part partition;
   int partNum = partitionsNumber(argv[1]);
+  initializeDirectories();
   for (int i = 0; i < partNum; i++) {
     partition = jsonToPart(argv[1], i);
+    if (partition.wipe)
+      formatPartition(partition);
+    else
+      printf("Skipping wiping %s\n", partition.partition);
+    mountPartition(partition);
     freePart(partition);
   }
   installType install = jsonToConf(argv[1]);
