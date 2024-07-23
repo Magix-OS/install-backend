@@ -407,19 +407,19 @@ int main(int argc, char *argv[]) {
   part partition;
   int partNum = partitionsNumber(argv[1]);
   initializeDirectories();
-  /* for (int i = 0; i < partNum; i++) { */
-  /*   partition = jsonToPart(argv[1], i); */
-  /*   if (partition.wipe) */
-  /*     formatPartition(partition); */
-  /*   else */
-  /*     printf("Skipping wiping %s\n", partition.partition); */
-  /*   mountPartition(partition); */
-  /*   freePart(partition); */
-  /* } */
+  for (int i = 0; i < partNum; i++) {
+    partition = jsonToPart(argv[1], i);
+    if (partition.wipe)
+      formatPartition(partition);
+    else
+      printf("Skipping wiping %s\n", partition.partition);
+    mountPartition(partition);
+    freePart(partition);
+  }
   installType install = jsonToConf(argv[1]);
   stage4DLandExtract();
   chrootPrepare();
-  chdir("/mnt/gentoo");
+  // TODO:Add chroot operations
   chrootUnprepare();
   freeInstall(install);
   return 0;
