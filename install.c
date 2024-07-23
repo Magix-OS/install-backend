@@ -12,7 +12,6 @@
 #include <unistd.h>
 #define HOST                                                                   \
   "https://distfiles.gentoo.org/releases/amd64/autobuilds/20240714T170402Z/"
-#define MNTROOT "/mnt/gentoo"
 typedef struct part {
   char *partition;
   char *mountPoint;
@@ -27,7 +26,9 @@ typedef struct stage4 {
 typedef struct installType {
   enum privEscal { sudo, doas } privEscal;
   enum portage { binhost, source } portage;
-  enum stratas { arch, debian, fedora, ubuntu, voidlinux } stratas[5];
+  // arch, debian, fedora, ubuntu, voidlinux
+  bool stratas[5];
+  // intel, i915, nvidia, radeon, amdgpu, radeonsi, virtualbox, vmware
   stage4 stage4;
   bool gpus[8];
   int makeOptJ;
@@ -47,6 +48,8 @@ typedef struct installType {
 
 // Global variables
 char command[100];
+char *cards[] = {"intel",  "i915",     "nvidia",     "radeon",
+                 "amdgpu", "radeonsi", "virtualbox", "vmware"};
 // Shamelessly stolen from
 // https://github.com/kernaltrap8/tinyfetch/blob/main/src/tinyfetch.c
 bool isUEFI() {
@@ -111,8 +114,7 @@ void mountPartition(part part) {
   } else {
     strcat(command, "mount ");
     strcat(command, part.partition);
-    strcat(command, " ");
-    strcat(command, MNTROOT);
+    strcat(command, " /mnt/gentoo");
     strcat(command, part.mountPoint);
   }
   execProg(command);
@@ -382,7 +384,7 @@ void freePart(part part) {
   free(part.partition);
   free(part.fileSystem);
 }
-void chrootPrepare() {
+void chrootPrepare(installType install) {
 
   strcpy(command, "cp --dereference /etc/resolv.conf /mnt/gentoo/etc/");
   execProg(command);
@@ -398,28 +400,48 @@ void chrootPrepare() {
   execProg(command);
   strcpy(command, "mount --make-slave /mnt/gentoo/run ");
   execProg(command);
+  FILE *makeconf = fopen("/mnt/gentoo/etc/portage/make.conf", "a");
+  fprintf(makeconf, "MAKEOPTS=\"-j%d -l%d\"\n", install.makeOptJ,
+          install.makeOptL);
+  fprintf(makeconf, "VIDEO_CARDS=\"");
+  for (int i = 0; i < 8; i++) {
+    if (install.gpus[i]) {
+      fprintf(makeconf, "%s ", cards[i]);
+    }
+  }
+  fprintf(makeconf, "\"\n");
+  fprintf(makeconf, "ACCEPT_LICENSE=\"*\"\n");
+  fclose(makeconf);
+  FILE *localegen = fopen("/mnt/gentoo/etc/locale.gen", "a");
+  fprintf(localegen, "%s", install.locales);
+  fclose(localegen);
+  FILE *envdLocale;
+  if (install.stage4.init == OpenRC)
+    envdLocale = fopen("/mnt/gentoo/etc/env.d/02locale", "w");
+  else
+    envdLocale = fopen("/mnt/gentoo/etc/locale.conf", "w");
+  fprintf(envdLocale, "LANG=\"%s\"", install.locale);
+  fclose(envdLocale);
 }
-void chrootUnprepare() {
-  strcpy(command, "umount -R *");
-  execProg(command);
-}
+void chrootUnprepare() { system("umount -R *"); }
 int main(int argc, char *argv[]) {
   part partition;
   int partNum = partitionsNumber(argv[1]);
   initializeDirectories();
-  for (int i = 0; i < partNum; i++) {
-    partition = jsonToPart(argv[1], i);
-    if (partition.wipe)
-      formatPartition(partition);
-    else
-      printf("Skipping wiping %s\n", partition.partition);
-    mountPartition(partition);
-    freePart(partition);
-  }
+  /* for (int i = 0; i < partNum; i++) { */
+  /*   partition = jsonToPart(argv[1], i); */
+  /*   if (partition.wipe) */
+  /*     formatPartition(partition); */
+  /*   else */
+  /*     printf("Skipping wiping %s\n", partition.partition); */
+  /*   mountPartition(partition); */
+  /*   freePart(partition); */
+  /* } */
   installType install = jsonToConf(argv[1]);
-  stage4DLandExtract();
-  chrootPrepare();
-  // TODO:Add chroot operations
+  // stage4DLandExtract();
+  //  TODO:Add chroot operations
+  chrootPrepare(install);
+  chdir("/mnt/gentoo");
   chrootUnprepare();
   freeInstall(install);
   return 0;
