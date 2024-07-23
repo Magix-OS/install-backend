@@ -12,6 +12,7 @@
 #include <unistd.h>
 #define HOST                                                                   \
   "https://distfiles.gentoo.org/releases/amd64/autobuilds/20240714T170402Z/"
+#define MNTROOT "/mnt/gentoo"
 typedef struct part {
   char *partition;
   char *mountPoint;
@@ -48,6 +49,18 @@ typedef struct installType {
 char command[100];
 // Shamelessly stolen from
 // https://github.com/kernaltrap8/tinyfetch/blob/main/src/tinyfetch.c
+bool isUEFI() {
+  DIR *dir = opendir("/sys/firmware/efi");
+  if (dir) {
+    closedir(dir);
+    return true;
+  } else if (ENOENT == errno)
+    return false;
+  else {
+    printf("Errno :%d, cant detect if system is UEFI or BIOS\n", errno);
+    exit(EXIT_FAILURE);
+  }
+}
 int file_parser(const char *file, const char *line_to_read) {
   char resolved_path[PATH_MAX];
   if (realpath(file, resolved_path) == NULL) {
@@ -98,7 +111,8 @@ void mountPartition(part part) {
   } else {
     strcat(command, "mount ");
     strcat(command, part.partition);
-    strcat(command, " /mnt/gentoo");
+    strcat(command, " ");
+    strcat(command, MNTROOT);
     strcat(command, part.mountPoint);
   }
   execProg(command);
@@ -129,28 +143,27 @@ void formatPartition(part part) {
   execProg(command);
 }
 void initializeDirectories() {
-  umount2("/mnt/gentoo/efi", MNT_FORCE);
-  umount2("/mnt/gentoo", MNT_FORCE);
-  system("swapoff -a");
-  if ((mkdir("/mnt", 0777) != 0 || mkdir("/mnt/gentoo", 0777) != 0 ||
-       mkdir("/mnt/gentoo/efi", 0777) != 0) &&
-      errno != EEXIST) {
-    printf("Error initializing the mount points\n");
-    exit(EXIT_FAILURE);
-  }
-}
-bool isUEFI() {
-  DIR *dir = opendir("/sys/firmware/efi");
-  if (dir) {
-    closedir(dir);
-    return true;
-  } else if (ENOENT == errno)
-    return false;
+  if (opendir("/mnt/gentoo") != NULL)
+    umount2("/mnt/gentoo", MNT_FORCE);
   else {
-    printf("Errno :%d, cant detect if system is UEFI or BIOS\n", errno);
-    exit(EXIT_FAILURE);
+    if ((mkdir("/mnt", 0777) != 0 || mkdir("/mnt/gentoo", 0777) != 0)) {
+      printf("Missing Permissions\n");
+      exit(EXIT_FAILURE);
+    }
   }
+  if (isUEFI()) {
+    if (opendir("/mnt/gentoo/efi") != NULL)
+      umount2("/mnt/gentoo/efi", MNT_FORCE);
+    else {
+      if ((mkdir("/mnt/gentoo/efi", 0777) != 0)) {
+        printf("Missing Permissions, cant create /mnt/gentoo/efi\n");
+        exit(EXIT_FAILURE);
+      }
+    }
+  }
+  system("swapoff -a");
 }
+
 // TODO: Add parameters to decide which one to download
 void stage4DLandExtract() {
   char urlBottom[] = "stage3-amd64-openrc-20240714T170402Z.tar.xz";
@@ -164,14 +177,9 @@ void stage4DLandExtract() {
   strcat(command, HOST);
   strcat(command, urlBottom);
   execProg(command);
-  char *command2 =
-      malloc((strlen(urlBottom) +
-              strlen("tar xpvf --xattrs-include='*.*' --numeric-owner ") + 2) *
-             sizeof(char));
-  strcat(command2, "tar xpvf --xattrs-include='*.*' --numeric-owner ");
-  strcat(command2, urlBottom);
-  execProg(command2);
-  free(command2);
+  strcpy(command,
+         "tar xpvf stage3-*.tar.xz --xattrs-include='*.*' --numeric-owner");
+  execProg(command);
 }
 installType jsonToConf(char *path) {
   json_t *gpus, *stratas, *locales, *config, *root, *data;
@@ -374,20 +382,45 @@ void freePart(part part) {
   free(part.partition);
   free(part.fileSystem);
 }
+void chrootPrepare() {
+
+  strcpy(command, "cp --dereference /etc/resolv.conf /mnt/gentoo/etc/");
+  execProg(command);
+  strcpy(command, "mount --types proc /proc /mnt/gentoo/proc");
+  execProg(command);
+  strcpy(command, "mount --rbind /sys /mnt/gentoo/sys");
+  execProg(command);
+  strcpy(command, "mount --rbind /dev /mnt/gentoo/dev");
+  execProg(command);
+  strcpy(command, "mount --make-rslave /mnt/gentoo/dev");
+  execProg(command);
+  strcpy(command, "mount --bind /run /mnt/gentoo/run");
+  execProg(command);
+  strcpy(command, "mount --make-slave /mnt/gentoo/run ");
+  execProg(command);
+}
+void chrootUnprepare() {
+  strcpy(command, "umount -R *");
+  execProg(command);
+}
 int main(int argc, char *argv[]) {
   part partition;
   int partNum = partitionsNumber(argv[1]);
   initializeDirectories();
-  for (int i = 0; i < partNum; i++) {
-    partition = jsonToPart(argv[1], i);
-    if (partition.wipe)
-      formatPartition(partition);
-    else
-      printf("Skipping wiping %s\n", partition.partition);
-    mountPartition(partition);
-    freePart(partition);
-  }
+  /* for (int i = 0; i < partNum; i++) { */
+  /*   partition = jsonToPart(argv[1], i); */
+  /*   if (partition.wipe) */
+  /*     formatPartition(partition); */
+  /*   else */
+  /*     printf("Skipping wiping %s\n", partition.partition); */
+  /*   mountPartition(partition); */
+  /*   freePart(partition); */
+  /* } */
   installType install = jsonToConf(argv[1]);
+  stage4DLandExtract();
+  chrootPrepare();
+  chdir("/mnt/gentoo");
+  chrootUnprepare();
   freeInstall(install);
   return 0;
 }
