@@ -420,8 +420,39 @@ void chrootPrepare(installType install) {
     envdLocale = fopen("/mnt/gentoo/etc/env.d/02locale", "w");
   else
     envdLocale = fopen("/mnt/gentoo/etc/locale.conf", "w");
+
+  if (localegen == NULL || envdLocale == NULL) {
+    fprintf(
+        stderr,
+        "Something went wrong in locale generation, check that /etc/locale.gen "
+        ", /etc/env.d/02locale (Openrc) or /etc/locale.conf (SystemdD) exist");
+    exit(EXIT_FAILURE);
+  }
   fprintf(envdLocale, "LANG=\"%s\"", install.locale);
   fclose(envdLocale);
+  if (install.stage4.init == OpenRC) {
+    FILE *timezone = fopen("/mnt/gentoo/etc/timezone", "w");
+    if (timezone == NULL) {
+      fprintf(stderr, "Something went wrong in accessing /etc/timezone");
+      exit(EXIT_FAILURE);
+    }
+    fprintf(timezone, "%s", install.timezone);
+    fclose(timezone);
+  } else {
+    char *pwd = (char *)malloc(sizeof(char) * 1024);
+    getcwd(pwd, 1024);
+    char *timezoneString =
+        (char *)malloc(sizeof(char) * (strlen(install.timezone) +
+                                       strlen("/usr/share/zoneinfo/") + 1));
+    sprintf(timezoneString, "../usr/share/zoneinfo/%s", install.timezone);
+    chdir("/mnt/gentoo");
+    chroot("/mnt/gentoo");
+    symlink(timezoneString, "/etc/localtime");
+    system("exit");
+    free(timezoneString);
+    chdir(pwd);
+    free(pwd);
+  }
 }
 void chrootUnprepare() { system("umount -R *"); }
 int main(int argc, char *argv[]) {
