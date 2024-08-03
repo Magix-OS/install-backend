@@ -1,0 +1,4 @@
+#+title:  Magix installer
+
+
+test text
