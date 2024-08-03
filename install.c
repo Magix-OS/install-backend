@@ -162,6 +162,15 @@ void initializeDirectories() {
         exit(EXIT_FAILURE);
       }
     }
+  } else {
+    if (opendir("/mnt/gentoo/boot") != NULL)
+      umount2("/mnt/gentoo/boot", MNT_FORCE);
+    else {
+      if ((mkdir("/mnt/gentoo/boot", 0777) != 0)) {
+        printf("Missing Permissions, cant create /mnt/gentoo/boot\n");
+        exit(EXIT_FAILURE);
+      }
+    }
   }
   system("swapoff -a");
 }
@@ -453,6 +462,14 @@ void chrootPrepare(installType install) {
     chdir(pwd);
     free(pwd);
   }
+}
+void chrootCommand() {
+  FILE *script = fopen("/mnt/gentoo/script.sh", "a");
+  if (script == NULL) {
+    fprintf(stderr, "Something went wrong in accessing script.sh");
+    exit(EXIT_FAILURE);
+  }
+  fprintf(script, "#!/bin/bash\nenv-update && source /etc/profile");
 }
 void chrootUnprepare() { system("umount -R *"); }
 int main(int argc, char *argv[]) {
