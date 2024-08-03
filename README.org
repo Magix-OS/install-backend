@@ -1,4 +1,30 @@
-#+title:  Magix installer
+#+title:  Magix installer back-end
 
 
-test text
+This repository hosts the source code for the installation back-end for Magix Linux, a Gentoo based distribution.
+
+Currently only *amd64* is supported, sorry gang!
+
+* Dependencies :
+
+Currently only *libjansson* and *meson* are required to build and use this installer.
+
+
+* How to build :
+
+
+#+BEGIN_SRC shell
+meson setup builddir
+cd builddir
+ninja # Or meson compile
+#+END_SRC
+
+
+* How to use :
+
+All you need is a json file in [[https://github.com/Magix-OS/coding-conventions][This format]] and pass it as an argument to the resulting binary.
+
+** Notes :
+
+- All checks should be done in the frontend, refer to the Coding conventions repository for more info.
+- This installer WILL fail in the case of No Internet and Missing permissions, so this should be taken care of in the installer.
