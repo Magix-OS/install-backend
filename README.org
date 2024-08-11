@@ -1,7 +1,7 @@
 #+title:  Magix installer back-end
 
 
-This repository hosts the source code for the installation back-end for Magix Linux, a Gentoo based distribution.
+This repository hosts the source code for the installation back-end for Magix Linux, a Gentoo based distribution, spiritual successor of [[https://github.com/wamuu-sudo/orchid][Orchid Linux]]
 
 Currently only *amd64* is supported, sorry gang!
 
