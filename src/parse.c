@@ -4,7 +4,60 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include <string.h>
+const char *cards[] = {
+    "intel", "i915", "nvidia", "radeon",
+    "amdgpu", "radeonsi", "virtualbox", "vmware"
+};
+const char *stratas[] = {"arch", "debian", "fedora", "ubuntu", "voidlinux"};
 
+void outputDetails(installType const current) {
+    printf(
+       "Useflags: %s\nTimezone: %s\nFilename: %s\nLocales: %s\nPrimary Locale: %s\nKeyboard Layout: %s\nUsername: %s\nHostname: %s\nUserpassword: %s\nRootpassword: %s\nMakeopts: %d %d\nCards:",
+       current.useflags,current.timezone, current.filename, current.locales, current.locale, current.keyboard, current.username,
+       current.hostname, current.userpasswd, current.rootpasswd, current.makeOptJ, current.makeOptL);
+    for (int i = 0; i < 8; i++) {
+        if (current.gpus[i]) {
+            printf(" %s", cards[i]);
+        }
+    }
+    if (current.bedrock)
+        printf("\nBedrock: Yes");
+    else
+        printf("\nBedrock: No");
+    if (current.flatpak)
+        printf("\nFlatpak: Yes");
+    else
+        printf("\nFlatpak: No");
+    if (current.kernelBin)
+        printf("\nBinary Kernel: Yes");
+    else
+        printf("\nBinary Kernel: No");
+    printf("\nStratas:");
+    for (int i = 0; i < 5; i++) {
+        if (current.stratas[i]) {
+            printf(" %s", stratas[i]);
+        }
+    }
+    if (current.privEscal == sudo)
+        printf("\nPriv tool: sudo");
+    else
+        printf("\nPriv tool: doas");
+    if (current.portage == binhost)
+        printf("\nPortage packages: binary");
+    else
+        printf("\nPortage packages: source");
+    if (current.init == OpenRC)
+        printf("\nInit: OpenRC");
+    else
+        printf("\nInit: Systemd");
+    if (current.desktop == noX11)
+        printf("\nDesktop: None");
+    else if (current.desktop == Gnome)
+        printf("\nDesktop: Gnome");
+    else
+        printf("\nDesktop: Plasma");
+
+}
 bool isUEFI() {
     DIR *dir = opendir("/sys/firmware/efi");
     if (dir) {
@@ -82,6 +135,11 @@ installType jsonToConf(const char *path) {
         (1 + strlen(json_string_value(json_object_get(config, "hostname")))));
     strcpy(install.hostname,
            json_string_value(json_object_get(config, "hostname")));
+    install.filename = (char *) malloc(
+       sizeof(char) *
+       (1 + strlen(json_string_value(json_object_get(config, "filename")))));
+    strcpy(install.filename,
+           json_string_value(json_object_get(config, "filename")));
     install.userpasswd = (char *) malloc(
         sizeof(char) *
         (1 + strlen(json_string_value(json_object_get(config, "passwd")))));
@@ -127,6 +185,7 @@ installType jsonToConf(const char *path) {
     }
     for (int i = 0; i < json_array_size(gpus); i++)
         install.gpus[i] = json_boolean_value(json_array_get(gpus, i));
+
     json_decref(root);
     return install;
 }

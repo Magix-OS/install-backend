@@ -15,6 +15,7 @@ typedef struct installType {
     int makeOptJ;
     int makeOptL;
     char *timezone;
+    char *filename;
     char *locales;
     char *locale;
     char *keyboard;

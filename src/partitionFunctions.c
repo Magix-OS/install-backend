@@ -110,3 +110,13 @@ void preparePartitions(const char *path) {
         free(partition.fileSystem);
     }
 }
+
+void mountDirectories() {
+    execProg("cp --dereference /etc/resolv.conf /mnt/gentoo/etc/");
+    execProg("mount --types proc /proc /mnt/gentoo/proc");
+    execProg("mount --rbind /sys /mnt/gentoo/sys");
+    execProg("mount --rbind /dev /mnt/gentoo/dev");
+    execProg("mount --make-rslave /mnt/gentoo/dev");
+    execProg("mount --bind /run /mnt/gentoo/run");
+    execProg("mount --make-slave /mnt/gentoo/run ");
+}

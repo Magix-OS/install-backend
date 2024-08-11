@@ -27,14 +27,15 @@
             }
         ],
         "config": {
-            "privEscal": 1,
-            "portage": 1,
-            "init": 0,
+            "privEscal": false,
+            "portage": false,
+            "init": true,
             "desktop": 0,
             "makeOptJ": 8,
             "makeOptL": 4,
-            "bedrock": 1,
-            "flatpak": 0,
+            "bedrock": true,
+            "flatpak": false,
+            "kernel": false,
             "timezone": "Africa/Algiers",
             "locale": "en_US.UTF-8 UTF-8",
             "keyboard": "de",
@@ -44,7 +45,7 @@
             "rootpasswd": "Moresecurepassword123",
             "locales": ["en_US.UTF-8 UTF-8", "fr_FR.UTF-8 UTF-8"],
             "useflags": "bluetooth -X alsa",
-            "kernel": 0,
+            "filename": "/home/crystal/Downloads/stage4.tar.xz",
             "stratas": [true, true, false, false, false],
             "gpus": [true, true, true, false, false, false, false, false]
         }
