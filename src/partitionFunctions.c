@@ -96,18 +96,33 @@ void mountPartition(const part part) {
     }
     execProg(command);
 }
-void preparePartitions(const char *path) {
+void preparePartitions(const char *path, bool root) {
     const int partNum = partitionsNumber(path);
     for (int i = 0; i < partNum; i++) {
         const part partition = jsonToPart(path, i);
-        if (partition.wipe)
-            formatPartition(partition);
-        else
-            printf("Skipping wiping %s\n", partition.partition);
-        mountPartition(partition);
-        free(partition.mountPoint);
-        free(partition.partition);
-        free(partition.fileSystem);
+        if( root == true) {
+            if(strcmp(partition.mountPoint,"/") == 0) {
+                if (partition.wipe)
+                    formatPartition(partition);
+                else
+                    printf("Skipping wiping %s\n", partition.partition);
+                mountPartition(partition);
+                free(partition.mountPoint);
+                free(partition.partition);
+                free(partition.fileSystem);
+                break;
+            }
+        }
+        else {
+            if (partition.wipe)
+                formatPartition(partition);
+            else
+                printf("Skipping wiping %s\n", partition.partition);
+            mountPartition(partition);
+            free(partition.mountPoint);
+            free(partition.partition);
+            free(partition.fileSystem);
+        }
     }
 }
 
