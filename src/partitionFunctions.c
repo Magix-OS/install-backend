@@ -62,7 +62,6 @@ void formatPartition(part part) {
 }
 int partitionsNumber(const char *path) {
     json_error_t error;
-    bool wipe;
     json_t *root = json_load_file(path, 0, &error);
     if (root == NULL)
         exit(EXIT_FAILURE);
@@ -100,7 +99,7 @@ void preparePartitions(const char *path, bool root) {
     const int partNum = partitionsNumber(path);
     for (int i = 0; i < partNum; i++) {
         const part partition = jsonToPart(path, i);
-        if( root == true) {
+        if(root == true) {
             if(strcmp(partition.mountPoint,"/") == 0) {
                 if (partition.wipe)
                     formatPartition(partition);
