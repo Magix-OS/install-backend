@@ -7,6 +7,7 @@ void extractChroot(installType const install) {
     execProg(command);
     sprintf(command, "tar xpvf %s --xattrs-include='*.*' --numeric-owner", install.filename);
     execProg(command);
+    printf("Editing /etc/portage/make.conf\n");
     FILE *makeconf;
     if (pretend == 1)
         makeconf = stdout;
@@ -30,7 +31,7 @@ FEATURES="${FEATURES} getbinpkg"
 FEATURES="${FEATURES} binpkg-request-signature"
 )");
         FILE *gentoobinhost;
-        printf("Editing etc/portage/binrepos.conf/gentoobinhost.conf\n");
+        printf("\nEditing /etc/portage/binrepos.conf/gentoobinhost.conf\n");
         if (pretend == 1)
             gentoobinhost = stdout;
         else
@@ -41,9 +42,50 @@ FEATURES="${FEATURES} binpkg-request-signature"
     }
     if (pretend == 0)
         fclose(makeconf);
+
+    if (install.init == OpenRC) {
+        FILE *timezone;
+        if (pretend == 1)
+            timezone = stdout;
+        else
+            timezone = fopen("/mnt/gentoo/etc/timezone", "w");
+        printf("\nEditing /etc/timezone\n");
+        fprintf(timezone, "%s", install.timezone);
+        if (pretend == 0)
+            fclose(timezone);
+    }
+
+    FILE *localegen;
+    if (pretend == 1)
+        localegen = stdout;
+    else
+        localegen = fopen("/mnt/gentoo/etc/locale.gen", "w");
+    printf("\nEditing /etc/locale.gen\n");
+    fprintf(localegen, "%s", install.locales);
+    if (pretend == 0)
+        fclose(localegen);
+    FILE *localeconf;
+    if (pretend == 1)
+        localeconf = stdout;
+    else if (install.init == OpenRC)
+        localeconf = fopen("/mnt/gentoo/etc/env.d/02locale", "w");
+    else
+        localeconf = fopen("/mnt/gentoo/etc/locale.conf", "w");
+
+    printf("\nEditing either /etc/locale.conf or /etc/env.d/02locale\n");
+    fprintf(localeconf, "LANG=\"%s\"\nLC_COLLATE=\"C.UTF-8\"", install.locale);
+    if (pretend == 0)
+        fclose(localeconf);
 }
 
 void mkScript(installType const install) {
+    char path[256] = {0};
+    if (getcwd(path, sizeof(path)) == NULL) {
+        perror("getcwd");
+        exit(EXIT_FAILURE); // or abort()
+    }
+    printf("\n%s\n", path);
+    printf("Editing script.sh\n");
     FILE *script;
     if (pretend == 1)
         script = stdout;
@@ -53,6 +95,11 @@ void mkScript(installType const install) {
     fprintf(script, "#!/bin/bash\nset -e\nsource /etc/profile\nemerge-webrsync\nemerge --sync\n");
     if (install.portage == false)
         fprintf(script, "getuto\n");
-    fprintf(script,
-            "echo \"*/* $(cpuid2cpuflags)\" > /etc/portage/package.use/00cpu-flags\nemerge --ask --verbose --update --deep --newuse @world\n");
+    fprintf(script, "echo \"*/* $(cpuid2cpuflags)\" > /etc/portage/package.use/00cpu-flags\n");
+    if (install.worldUpdate)
+        fprintf(script, "emerge --ask --verbose --update --deep --newuse @world\n");
+    if (install.init == SystemD) {
+        fprintf(script, "ln -sf ../usr/share/zoneinfo/%s /etc/localtime\n", install.timezone);
+    }
+    fprintf(script, "locale-gen\nenv-update && source /etc/profile\n");
 }

@@ -12,9 +12,10 @@ const char *stratas[] = {"arch", "debian", "fedora", "ubuntu", "voidlinux"};
 
 void outputDetails(installType const current) {
     printf(
-       "Useflags: %s\nTimezone: %s\nFilename: %s\nLocales: %s\nPrimary Locale: %s\nKeyboard Layout: %s\nUsername: %s\nHostname: %s\nUserpassword: %s\nRootpassword: %s\nMakeopts: %d %d\nCards:",
-       current.useflags,current.timezone, current.filename, current.locales, current.locale, current.keyboard, current.username,
-       current.hostname, current.userpasswd, current.rootpasswd, current.makeOptJ, current.makeOptL);
+        "Useflags: %s\nTimezone: %s\nFilename: %s\nLocales: %s\nPrimary Locale: %s\nKeyboard Layout: %s\nUsername: %s\nHostname: %s\nUserpassword: %s\nRootpassword: %s\nMakeopts: %d %d\nCards:",
+        current.useflags, current.timezone, current.filename, current.locales, current.locale, current.keyboard,
+        current.username,
+        current.hostname, current.userpasswd, current.rootpasswd, current.makeOptJ, current.makeOptL);
     for (int i = 0; i < 8; i++) {
         if (current.gpus[i]) {
             printf(" %s", cards[i]);
@@ -56,8 +57,8 @@ void outputDetails(installType const current) {
         printf("\nDesktop: Gnome");
     else
         printf("\nDesktop: Plasma");
-
 }
+
 bool isUEFI() {
     DIR *dir = opendir("/sys/firmware/efi");
     if (dir) {
@@ -99,6 +100,7 @@ installType jsonToConf(const char *path) {
     install.kernelBin = json_boolean_value(json_object_get(config, "kernel"));
     install.portage = json_boolean_value(json_object_get(config, "portage"));
     install.init = json_boolean_value(json_object_get(config, "init"));
+    install.worldUpdate = json_boolean_value(json_object_get(config, "worldUpdate"));
     install.desktop =
             json_integer_value(json_object_get(config, "desktop"));
     install.makeOptJ = json_integer_value(json_object_get(config, "makeOptJ"));
@@ -136,8 +138,8 @@ installType jsonToConf(const char *path) {
     strcpy(install.hostname,
            json_string_value(json_object_get(config, "hostname")));
     install.filename = (char *) malloc(
-       sizeof(char) *
-       (1 + strlen(json_string_value(json_object_get(config, "filename")))));
+        sizeof(char) *
+        (1 + strlen(json_string_value(json_object_get(config, "filename")))));
     strcpy(install.filename,
            json_string_value(json_object_get(config, "filename")));
     install.userpasswd = (char *) malloc(
@@ -225,13 +227,13 @@ part jsonToPart(const char *path, const int i) {
     const json_t *mountpoint = json_object_get(args, "mountpoint");
     const bool wipe = json_boolean_value(json_object_get(args, "wipe"));
     part.partition =
-        (char *)malloc(sizeof(char) * (1 + strlen(json_string_value(paths))));
+            (char *) malloc(sizeof(char) * (1 + strlen(json_string_value(paths))));
     strcpy(part.partition, json_string_value(paths));
-    part.fileSystem = (char *)malloc(sizeof(char) *
-                                     (1 + strlen(json_string_value(filesystem))));
+    part.fileSystem = (char *) malloc(sizeof(char) *
+                                      (1 + strlen(json_string_value(filesystem))));
     strcpy(part.fileSystem, json_string_value(filesystem));
-    part.mountPoint = (char *)malloc(sizeof(char) *
-                                     (1 + strlen(json_string_value(mountpoint))));
+    part.mountPoint = (char *) malloc(sizeof(char) *
+                                      (1 + strlen(json_string_value(mountpoint))));
     strcpy(part.mountPoint, json_string_value(mountpoint));
     part.wipe = wipe;
     json_decref(root);

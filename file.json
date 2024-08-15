@@ -1,53 +1,72 @@
 [
-    {
-        "layout": [
-            {
-                "path": "/dev/sda1",
-                "args": {
-                    "mountpoint": "/efi",
-                    "filesystem": "FAT32",
-                    "wipe": false
-                }
-            },
-            {
-                "path": "/dev/sda2",
-                "args": {
-                    "mountpoint": "/",
-                    "filesystem": "BTRFS",
-                    "wipe": true
-                }
-            },
-            {
-                "path": "/dev/sda3",
-                "args": {
-                    "mountpoint": "SWAP",
-                    "filesystem": "SWAP",
-                    "wipe": true
-                }
-            }
-        ],
-        "config": {
-            "privEscal": false,
-            "portage": false,
-            "init": true,
-            "desktop": 0,
-            "makeOptJ": 8,
-            "makeOptL": 4,
-            "bedrock": true,
-            "flatpak": false,
-            "kernel": false,
-            "timezone": "Africa/Algiers",
-            "locale": "en_US.UTF-8 UTF-8",
-            "keyboard": "de",
-            "username": "crystal",
-            "hostname": "wizardbox",
-            "passwd": "Supersecurepassword123",
-            "rootpasswd": "Moresecurepassword123",
-            "locales": ["en_US.UTF-8 UTF-8", "fr_FR.UTF-8 UTF-8"],
-            "useflags": "bluetooth -X alsa",
-            "filename": "/home/crystal/Downloads/stage4.tar.xz",
-            "stratas": [true, true, false, false, false],
-            "gpus": [true, true, true, false, false, false, false, false]
+  {
+    "layout": [
+      {
+        "path": "/dev/sda1",
+        "args": {
+          "mountpoint": "/efi",
+          "filesystem": "FAT32",
+          "wipe": false
         }
+      },
+      {
+        "path": "/dev/sda2",
+        "args": {
+          "mountpoint": "/",
+          "filesystem": "BTRFS",
+          "wipe": true
+        }
+      },
+      {
+        "path": "/dev/sda3",
+        "args": {
+          "mountpoint": "SWAP",
+          "filesystem": "SWAP",
+          "wipe": true
+        }
+      }
+    ],
+    "config": {
+      "privEscal": false,
+      "portage": false,
+      "init": false,
+      "desktop": 0,
+      "makeOptJ": 8,
+      "makeOptL": 4,
+      "worldUpdate": true,
+      "bedrock": true,
+      "flatpak": false,
+      "kernel": false,
+      "timezone": "Africa/Algiers",
+      "locale": "en_US.UTF-8",
+      "keyboard": "de",
+      "username": "crystal",
+      "hostname": "wizardbox",
+      "passwd": "Supersecurepassword123",
+      "rootpasswd": "Moresecurepassword123",
+      "locales": [
+        "en_US.UTF-8 UTF-8",
+        "fr_FR.UTF-8 UTF-8"
+      ],
+      "useflags": "bluetooth -X alsa",
+      "filename": "/home/crystal/Downloads/stage4.tar.xz",
+      "stratas": [
+        true,
+        true,
+        false,
+        false,
+        false
+      ],
+      "gpus": [
+        true,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
     }
+  }
 ]

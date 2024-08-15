@@ -1,4 +1,5 @@
 bool pretend = 0;
+
 void execProg(char *command) {
     printf("Executing %s\n", command);
     if (pretend == 0) {

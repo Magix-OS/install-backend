@@ -37,6 +37,7 @@ void initializeDirectories() {
     }
     execProg("swapoff -a");
 }
+
 void formatPartition(part part) {
     char command[1024];
     if (strcmp(part.fileSystem, "BTRFS") == 0) {
@@ -60,6 +61,7 @@ void formatPartition(part part) {
     }
     execProg(command);
 }
+
 int partitionsNumber(const char *path) {
     json_error_t error;
     json_t *root = json_load_file(path, 0, &error);
@@ -86,6 +88,7 @@ int partitionsNumber(const char *path) {
     json_decref(root);
     return num;
 }
+
 void mountPartition(const part part) {
     char command[1024];
     if (strcmp(part.mountPoint, "SWAP") == 0) {
@@ -95,12 +98,13 @@ void mountPartition(const part part) {
     }
     execProg(command);
 }
-void preparePartitions(const char *path, bool root) {
+
+void preparePartitions(const char *path, bool const root) {
     const int partNum = partitionsNumber(path);
     for (int i = 0; i < partNum; i++) {
         const part partition = jsonToPart(path, i);
-        if(root == true) {
-            if(strcmp(partition.mountPoint,"/") == 0) {
+        if (root == true) {
+            if (strcmp(partition.mountPoint, "/") == 0) {
                 if (partition.wipe)
                     formatPartition(partition);
                 else
@@ -111,8 +115,7 @@ void preparePartitions(const char *path, bool root) {
                 free(partition.fileSystem);
                 break;
             }
-        }
-        else {
+        } else {
             if (partition.wipe)
                 formatPartition(partition);
             else

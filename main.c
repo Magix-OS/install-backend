@@ -7,6 +7,7 @@
 #include <src/execProg.c>
 #include <src/partitionFunctions.c>
 #include <src/chrootOperations.c>
+
 int main(int argc, char *argv[]) {
     if (strcmp(argv[2], "-p") == 0)
         pretend = 1;
@@ -18,5 +19,6 @@ int main(int argc, char *argv[]) {
     extractChroot(current);
     mountDirectories();
     preparePartitions(path,false);
+    mkScript(current);
     return 0;
 }
