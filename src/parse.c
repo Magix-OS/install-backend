@@ -10,12 +10,12 @@ const char *cards[] = {
 };
 const char *stratas[] = {"arch", "debian", "fedora", "ubuntu", "voidlinux"};
 
-void outputDetails(installType const current) {
+void output_details(install_type const current) {
     printf(
         "Useflags: %s\nTimezone: %s\nFilename: %s\nLocales: %s\nPrimary Locale: %s\nKeyboard Layout: %s\nUsername: %s\nHostname: %s\nUserpassword: %s\nRootpassword: %s\nMakeopts: %d %d\nCards:",
         current.useflags, current.timezone, current.filename, current.locales, current.locale, current.keyboard,
         current.username,
-        current.hostname, current.userpasswd, current.rootpasswd, current.makeOptJ, current.makeOptL);
+        current.hostname, current.userpasswd, current.rootpasswd, current.make_opt_j, current.make_opt_l);
     for (int i = 0; i < 8; i++) {
         if (current.gpus[i]) {
             printf(" %s", cards[i]);
@@ -29,7 +29,7 @@ void outputDetails(installType const current) {
         printf("\nFlatpak: Yes");
     else
         printf("\nFlatpak: No");
-    if (current.kernelBin)
+    if (current.kernel_bin)
         printf("\nBinary Kernel: Yes");
     else
         printf("\nBinary Kernel: No");
@@ -39,7 +39,7 @@ void outputDetails(installType const current) {
             printf(" %s", stratas[i]);
         }
     }
-    if (current.privEscal == sudo)
+    if (current.priv_escal == sudo)
         printf("\nPriv tool: sudo");
     else
         printf("\nPriv tool: doas");
@@ -47,19 +47,19 @@ void outputDetails(installType const current) {
         printf("\nPortage packages: binary");
     else
         printf("\nPortage packages: source");
-    if (current.init == OpenRC)
+    if (current.init == open_rc)
         printf("\nInit: OpenRC");
     else
         printf("\nInit: Systemd");
-    if (current.desktop == noX11)
+    if (current.desktop == no_x11)
         printf("\nDesktop: None");
-    else if (current.desktop == Gnome)
+    else if (current.desktop == gnome)
         printf("\nDesktop: Gnome");
     else
         printf("\nDesktop: Plasma");
 }
 
-bool isUEFI() {
+bool is_uefi() {
     DIR *dir = opendir("/sys/firmware/efi");
     if (dir) {
         closedir(dir);
@@ -72,10 +72,10 @@ bool isUEFI() {
     }
 }
 
-installType jsonToConf(const char *path) {
+install_type json_to_conf(const char *path) {
     json_error_t error;
     json_t *root = json_load_file(path, 0, &error);
-    installType install;
+    install_type install;
     if (root == NULL)
         exit(EXIT_FAILURE);
     if (!json_is_array(root)) {
@@ -95,16 +95,16 @@ installType jsonToConf(const char *path) {
         json_decref(root);
         exit(EXIT_FAILURE);
     }
-    install.isUefi = isUEFI();
-    install.privEscal = json_boolean_value(json_object_get(config, "privEscal"));
-    install.kernelBin = json_boolean_value(json_object_get(config, "kernel"));
+    install.is_uefi = is_uefi();
+    install.priv_escal = json_boolean_value(json_object_get(config, "privEscal"));
+    install.kernel_bin = json_boolean_value(json_object_get(config, "kernel"));
     install.portage = json_boolean_value(json_object_get(config, "portage"));
     install.init = json_boolean_value(json_object_get(config, "init"));
-    install.worldUpdate = json_boolean_value(json_object_get(config, "worldUpdate"));
+    install.world_update = json_boolean_value(json_object_get(config, "world_update"));
     install.desktop =
             json_integer_value(json_object_get(config, "desktop"));
-    install.makeOptJ = json_integer_value(json_object_get(config, "makeOptJ"));
-    install.makeOptL = json_integer_value(json_object_get(config, "makeOptL"));
+    install.make_opt_j = json_integer_value(json_object_get(config, "makeOptJ"));
+    install.make_opt_l = json_integer_value(json_object_get(config, "makeOptL"));
     install.bedrock = json_boolean_value(json_object_get(config, "bedrock"));
     install.flatpak = json_boolean_value(json_object_get(config, "flatpak"));
     install.timezone = (char *) malloc(
@@ -158,12 +158,12 @@ installType jsonToConf(const char *path) {
         json_decref(root);
         exit(EXIT_FAILURE);
     }
-    int localeLength = 0;
+    int locale_length = 0;
     for (int i = 0; i < json_array_size(locales); i++)
-        localeLength = localeLength + 1 +
+        locale_length = locale_length + 1 +
                        strlen(json_string_value(json_array_get(locales, i)));
 
-    install.locales = (char *) malloc(sizeof(char) * (1 + localeLength));
+    install.locales = (char *) malloc(sizeof(char) * (1 + locale_length));
     sprintf(install.locales, "%s\n",
             json_string_value(json_array_get(locales, 0)));
     for (int i = 1; i < json_array_size(locales); i++) {
@@ -192,7 +192,7 @@ installType jsonToConf(const char *path) {
     return install;
 }
 
-part jsonToPart(const char *path, const int i) {
+part json_to_part(const char *path, const int i) {
     json_error_t error;
     part part;
     json_t *root = json_load_file(path, 0, &error);
@@ -229,12 +229,12 @@ part jsonToPart(const char *path, const int i) {
     part.partition =
             (char *) malloc(sizeof(char) * (1 + strlen(json_string_value(paths))));
     strcpy(part.partition, json_string_value(paths));
-    part.fileSystem = (char *) malloc(sizeof(char) *
+    part.file_system = (char *) malloc(sizeof(char) *
                                       (1 + strlen(json_string_value(filesystem))));
-    strcpy(part.fileSystem, json_string_value(filesystem));
-    part.mountPoint = (char *) malloc(sizeof(char) *
+    strcpy(part.file_system, json_string_value(filesystem));
+    part.mount_point = (char *) malloc(sizeof(char) *
                                       (1 + strlen(json_string_value(mountpoint))));
-    strcpy(part.mountPoint, json_string_value(mountpoint));
+    strcpy(part.mount_point, json_string_value(mountpoint));
     part.wipe = wipe;
     json_decref(root);
     return part;

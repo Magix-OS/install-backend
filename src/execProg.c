@@ -1,6 +1,6 @@
 bool pretend = 0;
 
-void execProg(char *command) {
+void exec_prog(char *command) {
     printf("Executing %s\n", command);
     if (pretend == 0) {
         if (system(command) != 0) {

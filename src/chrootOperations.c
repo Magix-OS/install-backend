@@ -1,19 +1,19 @@
 #include <unistd.h>
 
-void extractChroot(installType const install) {
+void extract_chroot(install_type const install) {
     char command[1024];
     chdir("/mnt/gentoo");
     sprintf(command, "cp %s .", install.filename);
-    execProg(command);
+    exec_prog(command);
     sprintf(command, "tar xpvf %s --xattrs-include='*.*' --numeric-owner", install.filename);
-    execProg(command);
+    exec_prog(command);
     printf("Editing /etc/portage/make.conf\n");
     FILE *makeconf;
     if (pretend == 1)
         makeconf = stdout;
     else
         makeconf = fopen("etc/portage/make.conf", "a");
-    fprintf(makeconf, "MAKEOPTS=\"-j%d -l%d\"\n", install.makeOptJ, install.makeOptL);
+    fprintf(makeconf, "MAKEOPTS=\"-j%d -l%d\"\n", install.make_opt_j, install.make_opt_l);
     fprintf(makeconf, "USE=\"${USE} %s\"\n", install.useflags);
     fprintf(makeconf, "ACCEPT_LICENSE=\"*\"\n");
     fprintf(makeconf, "VIDEO_CARDS=\"");
@@ -43,7 +43,7 @@ FEATURES="${FEATURES} binpkg-request-signature"
     if (pretend == 0)
         fclose(makeconf);
 
-    if (install.init == OpenRC) {
+    if (install.init == open_rc) {
         FILE *timezone;
         if (pretend == 1)
             timezone = stdout;
@@ -67,7 +67,7 @@ FEATURES="${FEATURES} binpkg-request-signature"
     FILE *localeconf;
     if (pretend == 1)
         localeconf = stdout;
-    else if (install.init == OpenRC)
+    else if (install.init == open_rc)
         localeconf = fopen("/mnt/gentoo/etc/env.d/02locale", "w");
     else
         localeconf = fopen("/mnt/gentoo/etc/locale.conf", "w");
@@ -78,7 +78,7 @@ FEATURES="${FEATURES} binpkg-request-signature"
         fclose(localeconf);
 }
 
-void mkScript(installType const install) {
+void mk_script(install_type const install) {
     char path[256] = {0};
     if (getcwd(path, sizeof(path)) == NULL) {
         perror("getcwd");
@@ -96,9 +96,9 @@ void mkScript(installType const install) {
     if (install.portage == false)
         fprintf(script, "getuto\n");
     fprintf(script, "echo \"*/* $(cpuid2cpuflags)\" > /etc/portage/package.use/00cpu-flags\n");
-    if (install.worldUpdate)
+    if (install.world_update)
         fprintf(script, "emerge --ask --verbose --update --deep --newuse @world\n");
-    if (install.init == SystemD) {
+    if (install.init == system_d) {
         fprintf(script, "ln -sf ../usr/share/zoneinfo/%s /etc/localtime\n", install.timezone);
     }
     fprintf(script, "locale-gen\nenv-update && source /etc/profile\n");

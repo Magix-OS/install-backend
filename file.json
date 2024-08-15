@@ -33,7 +33,7 @@
       "desktop": 0,
       "makeOptJ": 8,
       "makeOptL": 4,
-      "worldUpdate": true,
+      "world_update": true,
       "bedrock": true,
       "flatpak": false,
       "kernel": false,

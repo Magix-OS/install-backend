@@ -1,11 +1,11 @@
-typedef struct installType {
-    enum privEscal { sudo, doas } privEscal;
+typedef struct install_type {
+    enum priv_escal { sudo, doas } priv_escal;
 
     enum portage { binhost, source } portage;
 
-    enum init { OpenRC, SystemD } init;
+    enum init { open_rc, system_d } init;
 
-    enum desktop { noX11, Gnome, Plasma } desktop;
+    enum desktop { no_x11, gnome, plasma } desktop;
 
     // intel, i915, nvidia, radeon, amdgpu, radeonsi, virtualbox, vmware
     bool gpus[8];
@@ -13,12 +13,12 @@ typedef struct installType {
     bool stratas[5];
     bool bedrock;
     bool flatpak;
-    bool isUefi;
-    bool kernelBin;
-    bool worldUpdate;
+    bool is_uefi;
+    bool kernel_bin;
+    bool world_update;
     char *useflags;
-    int makeOptJ;
-    int makeOptL;
+    int make_opt_j;
+    int make_opt_l;
     char *timezone;
     char *filename;
     char *locales;
@@ -28,11 +28,11 @@ typedef struct installType {
     char *hostname;
     char *userpasswd;
     char *rootpasswd;
-} installType;
+} install_type;
 
 typedef struct part {
     char *partition;
-    char *mountPoint;
-    char *fileSystem;
+    char *mount_point;
+    char *file_system;
     bool wipe;
 } part;
