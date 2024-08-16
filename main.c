@@ -15,6 +15,7 @@
 #include "src/parse.c"
 #include "src/partitionFunctions.c"
 #include "src/chrootOperations.c"
+
 int main(char *argv[]) {
     if (strcmp(argv[2], "-p") == 0)
         pretend = 1;
