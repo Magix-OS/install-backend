@@ -1,9 +1,3 @@
-#include <errno.h>
-#include <jansson.h>
-#include <src/customStructs.c>
-#include <sys/types.h>
-#include <dirent.h>
-#include <string.h>
 const char *cards[] = {
     "intel", "i915", "nvidia", "radeon",
     "amdgpu", "radeonsi", "virtualbox", "vmware"
