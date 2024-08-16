@@ -61,7 +61,7 @@ FEATURES="${FEATURES} binpkg-request-signature"
         fclose(localeconf);
 
     FILE *installkernel = openfile("/mnt/gentoo/etc/portage/package.use/installkernel", "w");
-    fprintf(installkernel,"sys-kernel/installkernel grub dracut");
+    fprintf(installkernel, "sys-kernel/installkernel grub dracut");
     if (pretend == 0)
         fclose(installkernel);
 }
@@ -96,5 +96,5 @@ void mk_script(install_type const install) {
     else
         fprintf(script, "emerge -v sys-kernel/gentoo-kernel\n");
 
-    fprintf(script,"emerge -v sys-kernel/dracut\n");
+    fprintf(script, "emerge -v sys-kernel/dracut\n");
 }
