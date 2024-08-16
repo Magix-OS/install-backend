@@ -161,7 +161,7 @@ install_type json_to_conf(const char *path) {
     int locale_length = 0;
     for (int i = 0; i < json_array_size(locales); i++)
         locale_length = locale_length + 1 +
-                       strlen(json_string_value(json_array_get(locales, i)));
+                        strlen(json_string_value(json_array_get(locales, i)));
 
     install.locales = (char *) malloc(sizeof(char) * (1 + locale_length));
     sprintf(install.locales, "%s\n",
@@ -230,10 +230,10 @@ part json_to_part(const char *path, const int i) {
             (char *) malloc(sizeof(char) * (1 + strlen(json_string_value(paths))));
     strcpy(part.partition, json_string_value(paths));
     part.file_system = (char *) malloc(sizeof(char) *
-                                      (1 + strlen(json_string_value(filesystem))));
+                                       (1 + strlen(json_string_value(filesystem))));
     strcpy(part.file_system, json_string_value(filesystem));
     part.mount_point = (char *) malloc(sizeof(char) *
-                                      (1 + strlen(json_string_value(mountpoint))));
+                                       (1 + strlen(json_string_value(mountpoint))));
     strcpy(part.mount_point, json_string_value(mountpoint));
     part.wipe = wipe;
     json_decref(root);
