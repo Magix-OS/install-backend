@@ -60,7 +60,10 @@ FEATURES="${FEATURES} binpkg-request-signature"
     if (pretend == 0)
         fclose(localeconf);
 
-    // FILE *installkernel = openfile("/mnt/gentoo/etc/portage/package.use/installkernel", "w");
+    FILE *installkernel = openfile("/mnt/gentoo/etc/portage/package.use/installkernel", "w");
+    fprintf(installkernel,"sys-kernel/installkernel grub dracut");
+    if (pretend == 0)
+        fclose(installkernel);
 }
 
 void mk_script(install_type const install) {
@@ -77,19 +80,21 @@ void mk_script(install_type const install) {
         fprintf(script, "getuto\n");
     fprintf(script, "echo \"*/* $(cpuid2cpuflags)\" > /etc/portage/package.use/00cpu-flags\n");
     if (install.world_update)
-        fprintf(script, "emerge --ask --verbose --update --deep --newuse @world\n");
+        fprintf(script, "emerge --verbose --update --deep --newuse @world\n");
     if (install.init == system_d) {
         fprintf(script, "ln -sf ../usr/share/zoneinfo/%s /etc/localtime\n", install.timezone);
     }
     fprintf(script, "locale-gen\nenv-update && source /etc/profile\n");
     if (install.linux_firmware)
-        fprintf(script, "emerge -av sys-kernel/linux-firmware\n");
+        fprintf(script, "emerge -v sys-kernel/linux-firmware\n");
     if (install.sof_firmware)
-        fprintf(script, "emerge -av sys-firmware/sof-firmware\n");
+        fprintf(script, "emerge -v sys-firmware/sof-firmware\n");
     if (install.intel_microcode)
-        fprintf(script, "emerge -av sys-firmware/intel-microcode\n");
+        fprintf(script, "emerge -v sys-firmware/intel-microcode\n");
     if (install.kernel_bin)
-        fprintf(script, "emerge -av sys-kernel/gentoo-kernel-bin\n");
+        fprintf(script, "emerge -v sys-kernel/gentoo-kernel-bin\n");
     else
-        fprintf(script, "emerge -av sys-kernel/gentoo-kernel\n");
+        fprintf(script, "emerge -v sys-kernel/gentoo-kernel\n");
+
+    fprintf(script,"emerge -v sys-kernel/dracut\n");
 }
