@@ -16,6 +16,9 @@ typedef struct install_type {
     bool is_uefi;
     bool kernel_bin;
     bool world_update;
+    bool intel_microcode;
+    bool sof_firmware;
+    bool linux_firmware;
     char *useflags;
     int make_opt_j;
     int make_opt_l;

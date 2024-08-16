@@ -57,6 +57,22 @@ void output_details(install_type const current) {
         printf("\nDesktop: Gnome");
     else
         printf("\nDesktop: Plasma");
+    if (current.world_update)
+        printf("\nWorld Update: Yes");
+    else
+        printf("\nWorld Update: No");
+    if (current.sof_firmware)
+        printf("\nSof firmware: Yes");
+    else
+        printf("\nSof firmware: No");
+    if (current.intel_microcode)
+        printf("\nIntel microcodes: Yes");
+    else
+        printf("\nIntel microcodes: No");
+    if (current.linux_firmware)
+        printf("\nLinux Firmware: Yes");
+    else
+        printf("\nLinux Firmware: No");
 }
 
 bool is_uefi() {
@@ -96,17 +112,20 @@ install_type json_to_conf(const char *path) {
         exit(EXIT_FAILURE);
     }
     install.is_uefi = is_uefi();
-    install.priv_escal = json_boolean_value(json_object_get(config, "privEscal"));
+    install.priv_escal = json_boolean_value(json_object_get(config, "priv_escal"));
     install.kernel_bin = json_boolean_value(json_object_get(config, "kernel"));
     install.portage = json_boolean_value(json_object_get(config, "portage"));
     install.init = json_boolean_value(json_object_get(config, "init"));
     install.world_update = json_boolean_value(json_object_get(config, "world_update"));
     install.desktop =
             json_integer_value(json_object_get(config, "desktop"));
-    install.make_opt_j = json_integer_value(json_object_get(config, "makeOptJ"));
-    install.make_opt_l = json_integer_value(json_object_get(config, "makeOptL"));
+    install.make_opt_j = json_integer_value(json_object_get(config, "make_opt_j"));
+    install.make_opt_l = json_integer_value(json_object_get(config, "make_opt_l"));
     install.bedrock = json_boolean_value(json_object_get(config, "bedrock"));
     install.flatpak = json_boolean_value(json_object_get(config, "flatpak"));
+    install.intel_microcode = json_boolean_value(json_object_get(config, "intel_microcode"));
+    install.sof_firmware = json_boolean_value(json_object_get(config, "sof_microcode"));
+    install.linux_firmware = json_boolean_value(json_object_get(config, "linux_firmware"));
     install.timezone = (char *) malloc(
         sizeof(char) *
         (1 + strlen(json_string_value(json_object_get(config, "timezone")))));
@@ -168,7 +187,8 @@ install_type json_to_conf(const char *path) {
             json_string_value(json_array_get(locales, 0)));
     for (int i = 1; i < json_array_size(locales); i++) {
         strcat(install.locales, json_string_value(json_array_get(locales, i)));
-        strcat(install.locales, "\n\0");
+        if (i != json_array_size(locales) - 1)
+            strcat(install.locales, "\n");
     }
     const json_t *stratas = json_object_get(config, "stratas");
     if (!json_is_array(stratas)) {

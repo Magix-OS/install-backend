@@ -2,17 +2,18 @@
 
 void extract_chroot(install_type const install) {
     char command[1024];
+    char path[256] = {0};
+    if (getcwd(path, sizeof(path)) == NULL) {
+        perror("getcwd");
+        exit(EXIT_FAILURE); // or abort()
+    }
     chdir("/mnt/gentoo");
     sprintf(command, "cp %s .", install.filename);
     exec_prog(command);
     sprintf(command, "tar xpvf %s --xattrs-include='*.*' --numeric-owner", install.filename);
     exec_prog(command);
-    printf("Editing /etc/portage/make.conf\n");
-    FILE *makeconf;
-    if (pretend == 1)
-        makeconf = stdout;
-    else
-        makeconf = fopen("etc/portage/make.conf", "a");
+    chdir(path);
+    FILE *makeconf = openfile("/mnt/gentoo/etc/portage/make.conf", "a");
     fprintf(makeconf, "MAKEOPTS=\"-j%d -l%d\"\n", install.make_opt_j, install.make_opt_l);
     fprintf(makeconf, "USE=\"${USE} %s\"\n", install.useflags);
     fprintf(makeconf, "ACCEPT_LICENSE=\"*\"\n");
@@ -30,12 +31,7 @@ FEATURES="${FEATURES} getbinpkg"
 # Require signatures
 FEATURES="${FEATURES} binpkg-request-signature"
 )");
-        FILE *gentoobinhost;
-        printf("\nEditing /etc/portage/binrepos.conf/gentoobinhost.conf\n");
-        if (pretend == 1)
-            gentoobinhost = stdout;
-        else
-            gentoobinhost = fopen("etc/portage/binrepos.conf/gentoobinhost.conf", "a");
+        FILE *gentoobinhost = openfile("/mnt/gentoo/etc/portage/binrepos.conf/gentoobinhost.conf", "a");
         fprintf(gentoobinhost, "priority = 9999");
         if (pretend == 0)
             fclose(gentoobinhost);
@@ -44,38 +40,27 @@ FEATURES="${FEATURES} binpkg-request-signature"
         fclose(makeconf);
 
     if (install.init == open_rc) {
-        FILE *timezone;
-        if (pretend == 1)
-            timezone = stdout;
-        else
-            timezone = fopen("/mnt/gentoo/etc/timezone", "w");
-        printf("\nEditing /etc/timezone\n");
+        FILE *timezone = openfile("/mnt/gentoo/etc/timezone", "w");
         fprintf(timezone, "%s", install.timezone);
         if (pretend == 0)
             fclose(timezone);
     }
 
-    FILE *localegen;
-    if (pretend == 1)
-        localegen = stdout;
-    else
-        localegen = fopen("/mnt/gentoo/etc/locale.gen", "w");
-    printf("\nEditing /etc/locale.gen\n");
+    FILE *localegen = openfile("/mnt/gentoo/etc/locale.gen", "w");;
     fprintf(localegen, "%s", install.locales);
     if (pretend == 0)
         fclose(localegen);
     FILE *localeconf;
-    if (pretend == 1)
-        localeconf = stdout;
-    else if (install.init == open_rc)
-        localeconf = fopen("/mnt/gentoo/etc/env.d/02locale", "w");
+    if (install.init == open_rc)
+        localeconf = openfile("/mnt/gentoo/etc/env.d/02locale", "w");
     else
-        localeconf = fopen("/mnt/gentoo/etc/locale.conf", "w");
+        localeconf = openfile("/mnt/gentoo/etc/locale.conf", "w");
 
-    printf("\nEditing either /etc/locale.conf or /etc/env.d/02locale\n");
     fprintf(localeconf, "LANG=\"%s\"\nLC_COLLATE=\"C.UTF-8\"", install.locale);
     if (pretend == 0)
         fclose(localeconf);
+
+    // FILE *installkernel = openfile("/mnt/gentoo/etc/portage/package.use/installkernel", "w");
 }
 
 void mk_script(install_type const install) {
@@ -85,12 +70,7 @@ void mk_script(install_type const install) {
         exit(EXIT_FAILURE); // or abort()
     }
     printf("\n%s\n", path);
-    printf("Editing script.sh\n");
-    FILE *script;
-    if (pretend == 1)
-        script = stdout;
-    else
-        script = fopen("script.sh", "w+");
+    FILE *script = openfile("/mnt/gentoo/script.sh", "w+");
     chmod("script.sh",S_IXOTH);
     fprintf(script, "#!/bin/bash\nset -e\nsource /etc/profile\nemerge-webrsync\nemerge --sync\n");
     if (install.portage == false)
@@ -102,4 +82,14 @@ void mk_script(install_type const install) {
         fprintf(script, "ln -sf ../usr/share/zoneinfo/%s /etc/localtime\n", install.timezone);
     }
     fprintf(script, "locale-gen\nenv-update && source /etc/profile\n");
+    if (install.linux_firmware)
+        fprintf(script, "emerge -av sys-kernel/linux-firmware\n");
+    if (install.sof_firmware)
+        fprintf(script, "emerge -av sys-firmware/sof-firmware\n");
+    if (install.intel_microcode)
+        fprintf(script, "emerge -av sys-firmware/intel-microcode\n");
+    if (install.kernel_bin)
+        fprintf(script, "emerge -av sys-kernel/gentoo-kernel-bin\n");
+    else
+        fprintf(script, "emerge -av sys-kernel/gentoo-kernel\n");
 }

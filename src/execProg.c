@@ -11,3 +11,15 @@ void exec_prog(char *command) {
         }
     }
 }
+
+FILE *openfile(const char *filename, const char *mode) {
+    printf("\nOpening: %s\n", filename);
+    if (pretend == 1)
+        return stdout;
+    FILE *openfile = fopen(filename, mode);
+    if (openfile == NULL) {
+        printf("\n Can't open %s\n", filename);
+        exit(EXIT_FAILURE); // or abort()
+    }
+    return openfile;
+}
