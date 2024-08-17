@@ -53,6 +53,7 @@
       "init": false,
       "intel_microcode": true,
       "kernel": false,
+      "grub_disk": "/dev/sda",
       "keyboard": "de",
       "linux_firmware": true,
       "locale": "en_US.UTF-8",

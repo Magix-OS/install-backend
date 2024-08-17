@@ -7,6 +7,13 @@ const char *filesystems[] = {
     "sys-fs/xfsprogs", "sys-fs/e2fsprogs", "sys-fs/dosfstools", "sys-fs/btrfs-progs", "sys-fs/zfs", "sys-fs/jfsutils"
 };
 
+void parse(char **output, const char *string, const json_t *config) {
+    *output = (char *) malloc(
+        sizeof(char) *
+        (1 + strlen(json_string_value(json_object_get(config, string)))));
+    strcpy(*output,
+           json_string_value(json_object_get(config, string)));
+}
 void output_details(install_type const current) {
     printf(
         "Useflags: %s\nTimezone: %s\nFilename: %s\nLocales: %s\nPrimary Locale: %s\nKeyboard Layout: %s\nUsername: %s\nHostname: %s\nUserpassword: %s\nRootpassword: %s\nMakeopts: %d %d\nCards:",
@@ -76,6 +83,7 @@ void output_details(install_type const current) {
         printf("\nLinux Firmware: Yes");
     else
         printf("\nLinux Firmware: No");
+    printf("\nGrub Disk : %s", current.grub_disk);
 }
 
 bool is_uefi() {
@@ -129,51 +137,16 @@ install_type json_to_conf(const char *path) {
     install.intel_microcode = json_boolean_value(json_object_get(config, "intel_microcode"));
     install.sof_firmware = json_boolean_value(json_object_get(config, "sof_microcode"));
     install.linux_firmware = json_boolean_value(json_object_get(config, "linux_firmware"));
-    install.timezone = (char *) malloc(
-        sizeof(char) *
-        (1 + strlen(json_string_value(json_object_get(config, "timezone")))));
-    strcpy(install.timezone,
-           json_string_value(json_object_get(config, "timezone")));
-
-    install.useflags = (char *) malloc(
-        sizeof(char) *
-        (1 + strlen(json_string_value(json_object_get(config, "useflags")))));
-    strcpy(install.useflags,
-           json_string_value(json_object_get(config, "useflags")));
-    install.locale = (char *) malloc(
-        sizeof(char) *
-        (1 + strlen(json_string_value(json_object_get(config, "locale")))));
-    strcpy(install.locale, json_string_value(json_object_get(config, "locale")));
-    install.keyboard = (char *) malloc(
-        sizeof(char) *
-        (1 + strlen(json_string_value(json_object_get(config, "keyboard")))));
-    strcpy(install.keyboard,
-           json_string_value(json_object_get(config, "keyboard")));
-    install.username = (char *) malloc(
-        sizeof(char) *
-        (1 + strlen(json_string_value(json_object_get(config, "username")))));
-    strcpy(install.username,
-           json_string_value(json_object_get(config, "username")));
-    install.hostname = (char *) malloc(
-        sizeof(char) *
-        (1 + strlen(json_string_value(json_object_get(config, "hostname")))));
-    strcpy(install.hostname,
-           json_string_value(json_object_get(config, "hostname")));
-    install.filename = (char *) malloc(
-        sizeof(char) *
-        (1 + strlen(json_string_value(json_object_get(config, "filename")))));
-    strcpy(install.filename,
-           json_string_value(json_object_get(config, "filename")));
-    install.userpasswd = (char *) malloc(
-        sizeof(char) *
-        (1 + strlen(json_string_value(json_object_get(config, "passwd")))));
-    strcpy(install.userpasswd,
-           json_string_value(json_object_get(config, "passwd")));
-    install.rootpasswd = (char *) malloc(
-        sizeof(char) *
-        (1 + strlen(json_string_value(json_object_get(config, "rootpasswd")))));
-    strcpy(install.rootpasswd,
-           json_string_value(json_object_get(config, "rootpasswd")));
+    parse(&install.timezone,"timezone",config);
+    parse(&install.useflags,"useflags",config);
+    parse(&install.locale,"locale",config);
+    parse(&install.keyboard,"keyboard",config);
+    parse(&install.username,"username",config);
+    parse(&install.hostname,"hostname",config);
+    parse(&install.filename,"filename",config);
+    parse(&install.userpasswd,"passwd",config);
+    parse(&install.rootpasswd,"rootpasswd",config);
+    parse(&install.grub_disk,"grub_disk", config);
     const json_t *locales = json_object_get(config, "locales");
     if (!json_is_array(locales)) {
         fprintf(stderr, "error: is not a array\n");

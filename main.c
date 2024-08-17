@@ -28,5 +28,7 @@ int main(int argc, char *argv[]) {
     mount_directories();
     prepare_partitions(path,false);
     mk_script(current);
+    exec_chroot();
+    clean_up();
     return 0;
 }

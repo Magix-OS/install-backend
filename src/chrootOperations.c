@@ -24,6 +24,7 @@ void extract_chroot(install_type const install) {
         }
     }
     fprintf(makeconf, "\"\n");
+    fprintf(makeconf, "GRUB_PLATFORMS=\"efi-64\"\n");
     if (install.portage == false) {
         fprintf(makeconf,
                 R"(# Appending getbinpkg to the list of values within the FEATURES variable
@@ -82,15 +83,18 @@ FEATURES="${FEATURES} binpkg-request-signature"
     }
     if (pretend == 0)
         fclose(keymaps);
+
+    if (install.priv_escal == doas) {
+        FILE *sudoas = openfile("/mnt/gentoo/etc/doas.conf","w");
+        fprintf(sudoas,"permit :wheel");
+        if (pretend == 0)
+            fclose(keymaps);
+    }
+
 }
 
 void mk_script(install_type const install) {
-    char path[256] = {0};
-    if (getcwd(path, sizeof(path)) == NULL) {
-        perror("getcwd");
-        exit(EXIT_FAILURE); // or abort()
-    }
-    printf("\nYou are here :%s\n", path);
+
     FILE *script = openfile("/mnt/gentoo/script.sh", "w+");
     chmod("script.sh",S_IXOTH);
     fprintf(script, "#!/bin/bash\nset -e\nsource /etc/profile\nemerge-webrsync\nemerge --sync\n");
@@ -127,4 +131,36 @@ void mk_script(install_type const install) {
         }
     }
     fprintf(script, " sys-block/io-scheduler-udev-rules\n");
+    fprintf(script, "emerge -vsys-boot/grub\n");
+    if(install.is_uefi)
+        fprintf(script, "grub-install --efi-directory=/efi\n");
+    else
+        fprintf(script, "grub-install %s\n", install.grub_disk);
+
+    fprintf(script,"grub-mkconfig -o /boot/grub/grub.cfg\n");
+    fprintf(script, "useradd -m -G users,wheel,audio,plugdev,video,input -s /bin/bash %s\n", install.username);
+    fprintf(script, "echo -e \"%s\n%s\" | passwd -q %s\n", install.userpasswd, install.userpasswd,install.username);
+    if (install.priv_escal == doas)
+        fprintf(script, "emerge -v app-admin/doas\nemerge -C sudo\nchown -c root:root /etc/doas.conf\nchmod -c 0400 /etc/doas.conf");
+    fprintf(script,"exit");
+
+    fclose(script);
+}
+void exec_chroot() {
+    char path[256] = {0};
+    if (getcwd(path, sizeof(path)) == NULL) {
+        perror("getcwd");
+        exit(EXIT_FAILURE); // or abort()
+    }
+    printf("\nYou are here :%s\n", path);
+    chdir("/mnt/gentoo");
+    chroot("/mnt/gentoo");
+    exec_prog("script.sh");
+    chdir(path);
+}
+
+void clean_up() {
+    exec_prog("umount -l /mnt/gentoo/dev{/shm,/pts,} ");
+    exec_prof("umount -R /mnt/gentoo ");
+
 }

@@ -21,9 +21,10 @@ typedef struct install_type {
     bool intel_microcode;
     bool sof_firmware;
     bool linux_firmware;
-    char *useflags;
     int make_opt_j;
     int make_opt_l;
+    char *useflags;
+    char *grub_disk;
     char *timezone;
     char *filename;
     char *locales;
