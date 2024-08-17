@@ -14,6 +14,7 @@ void parse(char **output, const char *string, const json_t *config) {
     strcpy(*output,
            json_string_value(json_object_get(config, string)));
 }
+
 void output_details(install_type const current) {
     printf(
         "Useflags: %s\nTimezone: %s\nFilename: %s\nLocales: %s\nPrimary Locale: %s\nKeyboard Layout: %s\nUsername: %s\nHostname: %s\nUserpassword: %s\nRootpassword: %s\nMakeopts: %d %d\nCards:",
@@ -137,16 +138,16 @@ install_type json_to_conf(const char *path) {
     install.intel_microcode = json_boolean_value(json_object_get(config, "intel_microcode"));
     install.sof_firmware = json_boolean_value(json_object_get(config, "sof_microcode"));
     install.linux_firmware = json_boolean_value(json_object_get(config, "linux_firmware"));
-    parse(&install.timezone,"timezone",config);
-    parse(&install.useflags,"useflags",config);
-    parse(&install.locale,"locale",config);
-    parse(&install.keyboard,"keyboard",config);
-    parse(&install.username,"username",config);
-    parse(&install.hostname,"hostname",config);
-    parse(&install.filename,"filename",config);
-    parse(&install.userpasswd,"passwd",config);
-    parse(&install.rootpasswd,"rootpasswd",config);
-    parse(&install.grub_disk,"grub_disk", config);
+    parse(&install.timezone, "timezone", config);
+    parse(&install.useflags, "useflags", config);
+    parse(&install.locale, "locale", config);
+    parse(&install.keyboard, "keyboard", config);
+    parse(&install.username, "username", config);
+    parse(&install.hostname, "hostname", config);
+    parse(&install.filename, "filename", config);
+    parse(&install.userpasswd, "passwd", config);
+    parse(&install.rootpasswd, "rootpasswd", config);
+    parse(&install.grub_disk, "grub_disk", config);
     const json_t *locales = json_object_get(config, "locales");
     if (!json_is_array(locales)) {
         fprintf(stderr, "error: is not a array\n");
