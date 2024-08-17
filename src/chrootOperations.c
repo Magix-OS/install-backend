@@ -75,11 +75,10 @@ FEATURES="${FEATURES} binpkg-request-signature"
     FILE *keymaps;
     if (install.init == open_rc) {
         keymaps = openfile("/mnt/gentoo/etc/conf.d/keymaps", "w");
-        fprintf(keymaps, "keymap=\"%s\"\nwindowkeys=\"YES\"\nfix_euro=\"YES\"",install.keyboard);
-    }
-    else {
+        fprintf(keymaps, "keymap=\"%s\"\nwindowkeys=\"YES\"\nfix_euro=\"YES\"", install.keyboard);
+    } else {
         keymaps = openfile("/mnt/gentoo/etc/vconsole.conf", "w");
-        fprintf(keymaps, "KEYMAP=\"%s\"",install.keyboard);
+        fprintf(keymaps, "KEYMAP=\"%s\"", install.keyboard);
     }
     if (pretend == 0)
         fclose(keymaps);
@@ -124,7 +123,7 @@ void mk_script(install_type const install) {
     fprintf(script, "emerge -v");
     for (int i = 0; i < 6; i++) {
         if (install.filesystems[i]) {
-            fprintf(script," %s", filesystems[i]);
+            fprintf(script, " %s", filesystems[i]);
         }
     }
     fprintf(script, " sys-block/io-scheduler-udev-rules\n");

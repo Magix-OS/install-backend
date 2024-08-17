@@ -3,7 +3,10 @@ const char *cards[] = {
     "amdgpu", "radeonsi", "virtualbox", "vmware"
 };
 const char *stratas[] = {"arch", "debian", "fedora", "ubuntu", "voidlinux"};
-const char *filesystems[] = {"sys-fs/xfsprogs","sys-fs/e2fsprogs","sys-fs/dosfstools","sys-fs/btrfs-progs","sys-fs/zfs","sys-fs/jfsutils"};
+const char *filesystems[] = {
+    "sys-fs/xfsprogs", "sys-fs/e2fsprogs", "sys-fs/dosfstools", "sys-fs/btrfs-progs", "sys-fs/zfs", "sys-fs/jfsutils"
+};
+
 void output_details(install_type const current) {
     printf(
         "Useflags: %s\nTimezone: %s\nFilename: %s\nLocales: %s\nPrimary Locale: %s\nKeyboard Layout: %s\nUsername: %s\nHostname: %s\nUserpassword: %s\nRootpassword: %s\nMakeopts: %d %d\nCards:",
