@@ -16,7 +16,7 @@
 #include "src/partitionFunctions.c"
 #include "src/chrootOperations.c"
 
-int main(int argc,char *argv[]) {
+int main(int argc, char *argv[]) {
     if (strcmp(argv[2], "-p") == 0)
         pretend = 1;
     const char *path = argv[1];
