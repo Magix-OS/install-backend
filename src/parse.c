@@ -3,7 +3,7 @@ const char *cards[] = {
     "amdgpu", "radeonsi", "virtualbox", "vmware"
 };
 const char *stratas[] = {"arch", "debian", "fedora", "ubuntu", "voidlinux"};
-
+const char *filesystems[] = {"sys-fs/xfsprogs","sys-fs/e2fsprogs","sys-fs/dosfstools","sys-fs/btrfs-progs","sys-fs/zfs","sys-fs/jfsutils"};
 void output_details(install_type const current) {
     printf(
         "Useflags: %s\nTimezone: %s\nFilename: %s\nLocales: %s\nPrimary Locale: %s\nKeyboard Layout: %s\nUsername: %s\nHostname: %s\nUserpassword: %s\nRootpassword: %s\nMakeopts: %d %d\nCards:",
@@ -31,6 +31,12 @@ void output_details(install_type const current) {
     for (int i = 0; i < 5; i++) {
         if (current.stratas[i]) {
             printf(" %s", stratas[i]);
+        }
+    }
+    printf("\nFilesystems:");
+    for (int i = 0; i < 6; i++) {
+        if (current.filesystems[i]) {
+            printf(" %s", filesystems[i]);
         }
     }
     if (current.priv_escal == sudo)
@@ -201,7 +207,14 @@ install_type json_to_conf(const char *path) {
     }
     for (int i = 0; i < json_array_size(gpus); i++)
         install.gpus[i] = json_boolean_value(json_array_get(gpus, i));
-
+    const json_t *filesystems = json_object_get(config, "filesystems");
+    if (!json_is_array(filesystems)) {
+        fprintf(stderr, "error: is not a array\n");
+        json_decref(root);
+        exit(EXIT_FAILURE);
+    }
+    for (int i = 0; i < json_array_size(filesystems); i++)
+        install.filesystems[i] = json_boolean_value(json_array_get(filesystems, i));
     json_decref(root);
     return install;
 }

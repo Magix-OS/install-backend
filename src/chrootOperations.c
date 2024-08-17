@@ -15,7 +15,7 @@ void extract_chroot(install_type const install) {
     chdir(path);
     FILE *makeconf = openfile("/mnt/gentoo/etc/portage/make.conf", "a");
     fprintf(makeconf, "MAKEOPTS=\"-j%d -l%d\"\n", install.make_opt_j, install.make_opt_l);
-    fprintf(makeconf, "USE=\"${USE} %s\"\n", install.useflags);
+    fprintf(makeconf, "USE=\"${USE} %s networkmanager\"\n", install.useflags);
     fprintf(makeconf, "ACCEPT_LICENSE=\"*\"\n");
     fprintf(makeconf, "VIDEO_CARDS=\"");
     for (int i = 0; i < 8; i++) {
@@ -64,6 +64,25 @@ FEATURES="${FEATURES} binpkg-request-signature"
     fprintf(installkernel, "sys-kernel/installkernel grub dracut");
     if (pretend == 0)
         fclose(installkernel);
+    FILE *hostname = openfile("/mnt/gentoo/etc/hostname", "w");
+    fprintf(hostname, "%s", install.hostname);
+    if (pretend == 0)
+        fclose(hostname);
+    FILE *hosts = openfile("/mnt/gentoo/etc/hosts", "w");
+    fprintf(hosts, "127.0.0.1     %s.homenetwork %s localhost", install.hostname, install.hostname);
+    if (pretend == 0)
+        fclose(hosts);
+    FILE *keymaps;
+    if (install.init == open_rc) {
+        keymaps = openfile("/mnt/gentoo/etc/conf.d/keymaps", "w");
+        fprintf(keymaps, "keymap=\"%s\"\nwindowkeys=\"YES\"\nfix_euro=\"YES\"",install.keyboard);
+    }
+    else {
+        keymaps = openfile("/mnt/gentoo/etc/vconsole.conf", "w");
+        fprintf(keymaps, "KEYMAP=\"%s\"",install.keyboard);
+    }
+    if (pretend == 0)
+        fclose(keymaps);
 }
 
 void mk_script(install_type const install) {
@@ -72,7 +91,7 @@ void mk_script(install_type const install) {
         perror("getcwd");
         exit(EXIT_FAILURE); // or abort()
     }
-    printf("\n%s\n", path);
+    printf("\nYou are here :%s\n", path);
     FILE *script = openfile("/mnt/gentoo/script.sh", "w+");
     chmod("script.sh",S_IXOTH);
     fprintf(script, "#!/bin/bash\nset -e\nsource /etc/profile\nemerge-webrsync\nemerge --sync\n");
@@ -97,4 +116,16 @@ void mk_script(install_type const install) {
         fprintf(script, "emerge -v sys-kernel/gentoo-kernel\n");
 
     fprintf(script, "emerge -v sys-kernel/dracut\n");
+    fprintf(script, "emerge -v genfstab\ngenfstab / > /etc/fstab\n");
+    fprintf(script, "echo -e \"%s\n%s\" | passwd -q\n", install.rootpasswd, install.rootpasswd);
+    if (install.init == system_d) {
+        fprintf(script, "systemd-machine-id-setup\nsystemctl preset-all --preset-mode=enable-only\n");
+    }
+    fprintf(script, "emerge -v");
+    for (int i = 0; i < 6; i++) {
+        if (install.filesystems[i]) {
+            fprintf(script," %s", filesystems[i]);
+        }
+    }
+    fprintf(script, " sys-block/io-scheduler-udev-rules\n");
 }

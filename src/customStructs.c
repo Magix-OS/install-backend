@@ -11,6 +11,8 @@ typedef struct install_type {
     bool gpus[8];
     // arch, debian, fedora, ubuntu, voidlinux
     bool stratas[5];
+    // xfs, ext4, vfat, btrfs, zfs, jfs
+    bool filesystems[6];
     bool bedrock;
     bool flatpak;
     bool is_uefi;
