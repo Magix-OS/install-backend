@@ -156,7 +156,7 @@ void exec_chroot() {
     printf("\nYou are here :%s\n", path);
     chdir("/mnt/gentoo");
     chroot("/mnt/gentoo");
-    exec_prog("/mnt/gentoo/script.sh");
+    exec_prog("./script.sh");
     chdir(path);
 }
 
