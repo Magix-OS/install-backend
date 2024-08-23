@@ -34,12 +34,12 @@ FEATURES="${FEATURES} getbinpkg"
 FEATURES="${FEATURES} binpkg-request-signature"
 )");
         FILE *gentoobinhost = openfile("/mnt/gentoo/etc/portage/binrepos.conf/gentoobinhost.conf", "a");
-        fprintf(gentoobinhost, "priority = 9999");
+        fprintf(gentoobinhost, "priority = 9999\n");
         if (pretend == 0)
             fclose(gentoobinhost);
     } else {
         FILE *gentoobinhost = openfile("/mnt/gentoo/etc/portage/binrepos.conf/gentoobinhost.conf", "a");
-        fprintf(gentoobinhost, "priority = 1");
+        fprintf(gentoobinhost, "priority = 1\n");
         if (pretend == 0)
             fclose(gentoobinhost);
     }
@@ -48,7 +48,7 @@ FEATURES="${FEATURES} binpkg-request-signature"
 
     if (install.init == open_rc) {
         FILE *timezone = openfile("/mnt/gentoo/etc/timezone", "w");
-        fprintf(timezone, "%s", install.timezone);
+        fprintf(timezone, "%s\n", install.timezone);
         if (pretend == 0)
             fclose(timezone);
     }
@@ -63,36 +63,36 @@ FEATURES="${FEATURES} binpkg-request-signature"
     else
         localeconf = openfile("/mnt/gentoo/etc/locale.conf", "w");
 
-    fprintf(localeconf, "LANG=\"%s\"\nLC_COLLATE=\"C.UTF-8\"", install.locale);
+    fprintf(localeconf, "LANG=\"%s\"\nLC_COLLATE=\"C.UTF-8\"\n", install.locale);
     if (pretend == 0)
         fclose(localeconf);
 
     FILE *installkernel = openfile("/mnt/gentoo/etc/portage/package.use/installkernel", "w");
-    fprintf(installkernel, "sys-kernel/installkernel grub dracut");
+    fprintf(installkernel, "sys-kernel/installkernel grub dracut\n");
     if (pretend == 0)
         fclose(installkernel);
     FILE *hostname = openfile("/mnt/gentoo/etc/hostname", "w");
-    fprintf(hostname, "%s", install.hostname);
+    fprintf(hostname, "%s\n", install.hostname);
     if (pretend == 0)
         fclose(hostname);
     FILE *hosts = openfile("/mnt/gentoo/etc/hosts", "w");
-    fprintf(hosts, "127.0.0.1     %s.homenetwork %s localhost", install.hostname, install.hostname);
+    fprintf(hosts, "127.0.0.1     %s.homenetwork %s localhost\n", install.hostname, install.hostname);
     if (pretend == 0)
         fclose(hosts);
     FILE *keymaps;
     if (install.init == open_rc) {
         keymaps = openfile("/mnt/gentoo/etc/conf.d/keymaps", "w");
-        fprintf(keymaps, "keymap=\"%s\"\nwindowkeys=\"YES\"\nfix_euro=\"YES\"", install.keyboard);
+        fprintf(keymaps, "keymap=\"%s\"\nwindowkeys=\"YES\"\nfix_euro=\"YES\"\n", install.keyboard);
     } else {
         keymaps = openfile("/mnt/gentoo/etc/vconsole.conf", "w");
-        fprintf(keymaps, "KEYMAP=\"%s\"", install.keyboard);
+        fprintf(keymaps, "KEYMAP=\"%s\"\n", install.keyboard);
     }
     if (pretend == 0)
         fclose(keymaps);
 
     if (install.priv_escal == doas) {
         FILE *sudoas = openfile("/mnt/gentoo/etc/doas.conf", "w");
-        fprintf(sudoas, "permit :wheel");
+        fprintf(sudoas, "permit :wheel\n");
         if (pretend == 0)
             fclose(keymaps);
     }
@@ -137,7 +137,7 @@ void mk_script(install_type const install) {
         }
     }
     fprintf(script, " sys-block/io-scheduler-udev-rules\n");
-    fprintf(script, " emerge -v sys-boot/grub\n");
+    fprintf(script, "emerge -v sys-boot/grub\n");
     if (install.is_uefi)
         fprintf(script, "grub-install --efi-directory=/efi\n");
     else
@@ -149,9 +149,9 @@ void mk_script(install_type const install) {
     if (install.priv_escal == doas)
         fprintf(script,
                 "emerge -v app-admin/doas\nemerge -C sudo\nchown -c root:root /etc/doas.conf\nchmod -c 0400 /etc/doas.conf\n");
-    fprintf(script, "exit");
+    if (pretend == 0)
+        fclose(script);
 
-    fclose(script);
 }
 
 void exec_chroot() {
@@ -164,6 +164,7 @@ void exec_chroot() {
     chdir("/mnt/gentoo");
     chroot("/mnt/gentoo");
     exec_prog("./script.sh");
+    exec_prog("exit");
     chdir(path);
 }
 
