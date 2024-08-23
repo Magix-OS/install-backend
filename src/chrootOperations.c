@@ -94,7 +94,7 @@ FEATURES="${FEATURES} binpkg-request-signature"
 
 void mk_script(install_type const install) {
     FILE *script = openfile("/mnt/gentoo/script.sh", "w+");
-    chmod("script.sh",S_IXOTH);
+    chmod("/mnt/gentoo/script.sh",S_IXOTH);
     fprintf(script,
             "#!/bin/bash\nset -e\nchroot /mnt/gentoo /bin/bash\nsource /etc/profile\nemerge-webrsync\nemerge --sync\n");
     if (install.portage == false)
@@ -160,5 +160,5 @@ void exec_chroot() {
 
 void clean_up() {
     exec_prog("umount -l /mnt/gentoo/dev{/shm,/pts,} ");
-    exec_prog("umount -R /mnt/gentoo ");
+    exec_prog("umount -R /mnt/gentoo/ ");
 }
