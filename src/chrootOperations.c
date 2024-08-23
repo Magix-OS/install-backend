@@ -36,8 +36,7 @@ FEATURES="${FEATURES} binpkg-request-signature"
         fprintf(gentoobinhost, "priority = 9999");
         if (pretend == 0)
             fclose(gentoobinhost);
-    }
-    else {
+    } else {
         FILE *gentoobinhost = openfile("/mnt/gentoo/etc/portage/binrepos.conf/gentoobinhost.conf", "a");
         fprintf(gentoobinhost, "priority = 1");
         if (pretend == 0)
@@ -105,7 +104,7 @@ void mk_script(install_type const install) {
             "#!/bin/bash\nset -e\nsource /etc/profile\nemerge-webrsync\nemerge --sync\n");
     if (install.portage == false)
         fprintf(script, "getuto\n");
-    fprintf(script, "echo \"*/* $(cpuid2cpuflags)\" > /etc/portage/package.use/00cpu-flags\n");
+    fprintf(script, "emerge --oneshot app-portage/cpuid2cpuflags\necho \"*/* $(cpuid2cpuflags)\" > /etc/portage/package.use/00cpu-flags\n");
     if (install.world_update)
         fprintf(script, "emerge --verbose --update --deep --newuse @world\n");
     if (install.init == system_d) {
