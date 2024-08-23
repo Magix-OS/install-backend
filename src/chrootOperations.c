@@ -95,7 +95,7 @@ FEATURES="${FEATURES} binpkg-request-signature"
 void mk_script(install_type const install) {
     FILE *script = openfile("/mnt/gentoo/script.sh", "w+");
     chmod("script.sh",S_IXOTH);
-    fprintf(script, "#!/bin/bash\nset -e\nsource /etc/profile\nemerge-webrsync\nemerge --sync\n");
+    fprintf(script, "#!/bin/bash\nset -e\nchroot /mnt/gentoo /bin/bash\nsource /etc/profile\nemerge-webrsync\nemerge --sync\n");
     if (install.portage == false)
         fprintf(script, "getuto\n");
     fprintf(script, "echo \"*/* $(cpuid2cpuflags)\" > /etc/portage/package.use/00cpu-flags\n");
@@ -140,7 +140,7 @@ void mk_script(install_type const install) {
     fprintf(script, "echo -e \"%s\n%s\" | passwd -q %s\n", install.userpasswd, install.userpasswd, install.username);
     if (install.priv_escal == doas)
         fprintf(script,
-                "emerge -v app-admin/doas\nemerge -C sudo\nchown -c root:root /etc/doas.conf\nchmod -c 0400 /etc/doas.conf");
+                "emerge -v app-admin/doas\nemerge -C sudo\nchown -c root:root /etc/doas.conf\nchmod -c 0400 /etc/doas.conf\n");
     fprintf(script, "exit");
 
     fclose(script);
@@ -153,9 +153,7 @@ void exec_chroot() {
         exit(EXIT_FAILURE); // or abort()
     }
     printf("\nYou are here :%s\n", path);
-    chdir("/mnt/gentoo");
-    chroot("/mnt/gentoo");
-    exec_prog("script.sh");
+    exec_prog("/mnt/gentoo/script.sh");
     chdir(path);
 }
 
