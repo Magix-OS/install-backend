@@ -151,7 +151,6 @@ void mk_script(install_type const install) {
                 "emerge -v app-admin/doas\nemerge -C sudo\nchown -c root:root /etc/doas.conf\nchmod -c 0400 /etc/doas.conf\n");
     if (pretend == 0)
         fclose(script);
-
 }
 
 void exec_chroot() {
