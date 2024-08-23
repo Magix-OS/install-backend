@@ -104,8 +104,8 @@ void prepare_partitions(const char *path, bool const root) {
   const int part_num = partitions_number(path);
   for (int i = 0; i < part_num; i++) {
     const part partition = json_to_part(path, i);
-    if(root == true) {
-      if (strcmp(partition.mount_point,"/") == 0) {
+    if (root == true) {
+      if (strcmp(partition.mount_point, "/") == 0) {
         if (partition.wipe)
           format_partition(partition);
         else
@@ -115,9 +115,8 @@ void prepare_partitions(const char *path, bool const root) {
         free(partition.partition);
         free(partition.file_system);
       }
-    }
-    else {
-      if (strcmp(partition.mount_point,"/") != 0) {
+    } else {
+      if (strcmp(partition.mount_point, "/") != 0) {
         if (partition.wipe)
           format_partition(partition);
         else
