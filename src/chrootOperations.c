@@ -24,7 +24,8 @@ void extract_chroot(install_type const install) {
         }
     }
     fprintf(makeconf, "\"\n");
-    fprintf(makeconf, "GRUB_PLATFORMS=\"efi-64\"\n");
+    if (install.is_uefi)
+        fprintf(makeconf, "GRUB_PLATFORMS=\"efi-64\"\n");
     if (install.portage == false) {
         fprintf(makeconf,
                 R"(# Appending getbinpkg to the list of values within the FEATURES variable
