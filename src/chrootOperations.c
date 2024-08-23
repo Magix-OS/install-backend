@@ -37,6 +37,12 @@ FEATURES="${FEATURES} binpkg-request-signature"
         if (pretend == 0)
             fclose(gentoobinhost);
     }
+    else {
+        FILE *gentoobinhost = openfile("/mnt/gentoo/etc/portage/binrepos.conf/gentoobinhost.conf", "a");
+        fprintf(gentoobinhost, "priority = 1");
+        if (pretend == 0)
+            fclose(gentoobinhost);
+    }
     if (pretend == 0)
         fclose(makeconf);
 
