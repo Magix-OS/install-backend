@@ -1,4 +1,4 @@
-void initialize_directories() {
+void initialize_directories1() {
   if (opendir("/mnt/gentoo") != NULL)
     umount2("/mnt/gentoo", MNT_FORCE);
   else {
@@ -10,6 +10,8 @@ void initialize_directories() {
       }
     }
   }
+}
+void initialize_directories2(){
   if (is_uefi()) {
     if (opendir("/mnt/gentoo/efi") != NULL)
       umount2("/mnt/gentoo/efi", MNT_FORCE);
