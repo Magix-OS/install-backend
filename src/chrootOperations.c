@@ -136,7 +136,7 @@ void mk_script(install_type const install) {
         }
     }
     fprintf(script, " sys-block/io-scheduler-udev-rules\n");
-    fprintf(script, "emerge -v sys-boot/grub\n");
+    fprintf(script, " emerge -v sys-boot/grub\n");
     if (install.is_uefi)
         fprintf(script, "grub-install --efi-directory=/efi\n");
     else
