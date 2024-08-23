@@ -104,7 +104,8 @@ void mk_script(install_type const install) {
             "#!/bin/bash\nset -e\nsource /etc/profile\nemerge-webrsync\nemerge --sync\n");
     if (install.portage == false)
         fprintf(script, "getuto\n");
-    fprintf(script, "emerge --oneshot app-portage/cpuid2cpuflags\necho \"*/* $(cpuid2cpuflags)\" > /etc/portage/package.use/00cpu-flags\n");
+    fprintf(script,
+            "emerge --oneshot app-portage/cpuid2cpuflags\necho \"*/* $(cpuid2cpuflags)\" > /etc/portage/package.use/00cpu-flags\n");
     if (install.world_update)
         fprintf(script, "emerge --verbose --update --deep --newuse @world\n");
     if (install.init == system_d) {
@@ -135,7 +136,7 @@ void mk_script(install_type const install) {
         }
     }
     fprintf(script, " sys-block/io-scheduler-udev-rules\n");
-    fprintf(script, "emerge -vsys-boot/grub\n");
+    fprintf(script, "emerge -v sys-boot/grub\n");
     if (install.is_uefi)
         fprintf(script, "grub-install --efi-directory=/efi\n");
     else
