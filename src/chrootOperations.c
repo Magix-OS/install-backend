@@ -102,42 +102,48 @@ void mk_script(install_type const install) {
     FILE *script = openfile("/mnt/gentoo/script.sh", "w+");
     chmod("/mnt/gentoo/script.sh",S_IXOTH);
     fprintf(script,
-            "#!/bin/bash\nset -e\nsource /etc/profile\nemerge-webrsync\nemerge --sync\n");
+            "#!/bin/bash\nset -e\nsource /etc/profile\n");
     if (install.portage == false)
         fprintf(script, "getuto\n");
-    fprintf(script,
-            "emerge --oneshot app-portage/cpuid2cpuflags\necho \"*/* $(cpuid2cpuflags)\" > /etc/portage/package.use/00cpu-flags\n");
-    if (install.world_update)
-        fprintf(script, "emerge --verbose --update --deep --newuse @world\n");
     if (install.init == system_d) {
         fprintf(script, "ln -sf ../usr/share/zoneinfo/%s /etc/localtime\n", install.timezone);
     }
     fprintf(script, "locale-gen\nenv-update && source /etc/profile\n");
-    if (install.linux_firmware)
-        fprintf(script, "emerge -v sys-kernel/linux-firmware\n");
-    if (install.sof_firmware)
-        fprintf(script, "emerge -v sys-firmware/sof-firmware\n");
-    if (install.intel_microcode)
-        fprintf(script, "emerge -v sys-firmware/intel-microcode\n");
-    if (install.kernel_bin)
-        fprintf(script, "emerge -v sys-kernel/gentoo-kernel-bin\n");
-    else
-        fprintf(script, "emerge -v sys-kernel/gentoo-kernel\n");
+    if (install.world_update)
+        fprintf(script, "emerge-webrsync\nemerge --sync\nemerge --verbose --update --deep --newuse @world\n");
+    fprintf(script,
+            "emerge -v app-portage/cpuid2cpuflags");
 
-    fprintf(script, "emerge -v sys-kernel/dracut\n");
-    fprintf(script, "emerge -v genfstab\ngenfstab / > /etc/fstab\n");
-    fprintf(script, "echo -e \"%s\n%s\" | passwd -q\n", install.rootpasswd, install.rootpasswd);
-    if (install.init == system_d) {
-        fprintf(script, "systemd-machine-id-setup\nsystemctl preset-all --preset-mode=enable-only\n");
-    }
-    fprintf(script, "emerge -v");
+
+    if (install.linux_firmware)
+        fprintf(script, " sys-kernel/linux-firmware");
+    if (install.sof_firmware)
+        fprintf(script, " sys-firmware/sof-firmware");
+    if (install.intel_microcode)
+        fprintf(script, " sys-firmware/intel-microcode");
+    if (install.kernel_bin)
+        fprintf(script, " sys-kernel/gentoo-kernel-bin");
+    else
+        fprintf(script, " sys-kernel/gentoo-kernel");
+
+    fprintf(script, " sys-kernel/dracut genfstab");
     for (int i = 0; i < 6; i++) {
         if (install.filesystems[i]) {
             fprintf(script, " %s", filesystems[i]);
         }
     }
-    fprintf(script, " sys-block/io-scheduler-udev-rules\n");
-    fprintf(script, "emerge -v sys-boot/grub\n");
+    fprintf(script, " sys-block/io-scheduler-udev-rules sys-boot/grub ");
+    if (install.priv_escal == doas)
+        fprintf(script,
+                "app-admin/doas\nemerge -C sudo\nchown -c root:root /etc/doas.conf\nchmod -c 0400 /etc/doas.conf\n");
+    else
+        fprintf(script,"\n");
+    fprintf(script, "genfstab / > /etc/fstab\necho \"*/* $(cpuid2cpuflags)\" > /etc/portage/package.use/00cpu-flags\n");
+    fprintf(script, "echo -e \"%s\n%s\" | passwd -q\n", install.rootpasswd, install.rootpasswd);
+    if (install.init == system_d) {
+        fprintf(script, "systemd-machine-id-setup\nsystemctl preset-all --preset-mode=enable-only\n");
+    }
+
     if (install.is_uefi)
         fprintf(script, "grub-install --efi-directory=/efi\n");
     else
@@ -146,9 +152,7 @@ void mk_script(install_type const install) {
     fprintf(script, "grub-mkconfig -o /boot/grub/grub.cfg\n");
     fprintf(script, "useradd -m -G users,wheel,audio,plugdev,video,input -s /bin/bash %s\n", install.username);
     fprintf(script, "echo -e \"%s\n%s\" | passwd -q %s\n", install.userpasswd, install.userpasswd, install.username);
-    if (install.priv_escal == doas)
-        fprintf(script,
-                "emerge -v app-admin/doas\nemerge -C sudo\nchown -c root:root /etc/doas.conf\nchmod -c 0400 /etc/doas.conf\n");
+
     if (pretend == 0)
         fclose(script);
 }

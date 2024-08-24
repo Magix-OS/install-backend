@@ -62,12 +62,6 @@ void output_details(install_type const current) {
         printf("\nInit: OpenRC");
     else
         printf("\nInit: Systemd");
-    if (current.desktop == no_x11)
-        printf("\nDesktop: None");
-    else if (current.desktop == gnome)
-        printf("\nDesktop: Gnome");
-    else
-        printf("\nDesktop: Plasma");
     if (current.world_update)
         printf("\nWorld Update: Yes");
     else
@@ -129,8 +123,6 @@ install_type json_to_conf(const char *path) {
     install.portage = json_boolean_value(json_object_get(config, "portage"));
     install.init = json_boolean_value(json_object_get(config, "init"));
     install.world_update = json_boolean_value(json_object_get(config, "world_update"));
-    install.desktop =
-            json_integer_value(json_object_get(config, "desktop"));
     install.make_opt_j = json_integer_value(json_object_get(config, "make_opt_j"));
     install.make_opt_l = json_integer_value(json_object_get(config, "make_opt_l"));
     install.bedrock = json_boolean_value(json_object_get(config, "bedrock"));

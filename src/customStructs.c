@@ -5,7 +5,6 @@ typedef struct install_type {
 
     enum init { open_rc, system_d } init;
 
-    enum desktop { no_x11, gnome, plasma } desktop;
 
     // intel, i915, nvidia, radeon, amdgpu, radeonsi, virtualbox, vmware
     bool gpus[8];

@@ -28,7 +28,6 @@
     ],
     "config": {
       "bedrock": true,
-      "desktop": 0,
       "filename": "/home/crystal/Downloads/stage4.tar.xz",
       "filesystems": [
         true,
@@ -63,10 +62,10 @@
       ],
       "make_opt_j": 8,
       "make_opt_l": 4,
-      "passwd": "Supersecurepassword123",
+      "passwd": "password",
       "portage": false,
       "priv_escal": true,
-      "rootpasswd": "Moresecurepassword123",
+      "rootpasswd": "password",
       "sof_firmware": false,
       "stratas": [
         true,
