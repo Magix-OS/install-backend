@@ -137,7 +137,7 @@ void mk_script(install_type const install) {
         fprintf(script,
                 "app-admin/doas\nemerge -C sudo\nchown -c root:root /etc/doas.conf\nchmod -c 0400 /etc/doas.conf\n");
     else
-        fprintf(script,"\n");
+        fprintf(script, "\n");
     fprintf(script, "genfstab / > /etc/fstab\necho \"*/* $(cpuid2cpuflags)\" > /etc/portage/package.use/00cpu-flags\n");
     fprintf(script, "echo -e \"%s\n%s\" | passwd -q\n", install.rootpasswd, install.rootpasswd);
     if (install.init == system_d) {
