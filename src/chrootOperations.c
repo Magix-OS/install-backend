@@ -111,8 +111,7 @@ void mk_script(install_type const install) {
     fprintf(script, "locale-gen\nenv-update && source /etc/profile\n");
     if (install.world_update)
         fprintf(script, "emerge-webrsync\nemerge --sync\nemerge --verbose --update --deep --newuse @world\n");
-    fprintf(script,
-            "emerge -v app-portage/cpuid2cpuflags");
+    fprintf(script, "emerge -v app-portage/cpuid2cpuflags");
 
 
     if (install.linux_firmware)
@@ -132,10 +131,12 @@ void mk_script(install_type const install) {
             fprintf(script, " %s", filesystems[i]);
         }
     }
-    fprintf(script, " sys-block/io-scheduler-udev-rules sys-boot/grub ");
+    fprintf(script, " sys-block/io-scheduler-udev-rules sys-boot/grub");
+    if (install.flatpak)
+        fprintf(script, " sys-apps/flatpak");
     if (install.priv_escal == doas)
         fprintf(script,
-                "app-admin/doas\nemerge -C sudo\nchown -c root:root /etc/doas.conf\nchmod -c 0400 /etc/doas.conf\n");
+                " app-admin/doas\nemerge -C sudo\nchown -c root:root /etc/doas.conf\nchmod -c 0400 /etc/doas.conf\n");
     else
         fprintf(script, "\n");
     fprintf(script, "genfstab / > /etc/fstab\necho \"*/* $(cpuid2cpuflags)\" > /etc/portage/package.use/00cpu-flags\n");
@@ -152,7 +153,10 @@ void mk_script(install_type const install) {
     fprintf(script, "grub-mkconfig -o /boot/grub/grub.cfg\n");
     fprintf(script, "useradd -m -G users,wheel,audio,plugdev,video,input -s /bin/bash %s\n", install.username);
     fprintf(script, "echo -e \"%s\n%s\" | passwd -q %s\n", install.userpasswd, install.userpasswd, install.username);
-
+    if (install.flatpak)
+        fprintf(script,
+                "su %s -c \"flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo\"",
+                install.username);
     if (pretend == 0)
         fclose(script);
 }
