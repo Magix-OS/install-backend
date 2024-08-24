@@ -11,34 +11,8 @@ void initialize_directories1() {
     }
   }
 }
-void initialize_directories2(){
-  if (is_uefi()) {
-    if (opendir("/mnt/gentoo/efi") != NULL)
-      umount2("/mnt/gentoo/efi", MNT_FORCE);
-    else {
-      printf("Creating /mnt/gentoo/efi\n");
-      if (pretend == 0) {
-        if ((mkdir("/mnt/gentoo/efi", 0777) != 0)) {
-          printf("Missing Permissions, cant create /mnt/gentoo/efi\n");
-          exit(EXIT_FAILURE);
-        }
-      }
-    }
-  } else {
-    if (opendir("/mnt/gentoo/boot") != NULL)
-      umount2("/mnt/gentoo/boot", MNT_FORCE);
-    else {
-      printf("Creating /mnt/gentoo/boot\n");
-      if (pretend == 0) {
-        if ((mkdir("/mnt/gentoo/boot", 0777) != 0)) {
-          printf("Missing Permissions, cant create /mnt/gentoo/boot\n");
-          exit(EXIT_FAILURE);
-        }
-      }
-    }
-  }
-  exec_prog("swapoff -a");
-}
+
+
 
 void format_partition(part const part) {
   char command[1024];
@@ -96,6 +70,18 @@ void mount_partition(const part part) {
   if (strcmp(part.mount_point, "SWAP") == 0) {
     sprintf(command, "swapon %s", part.partition);
   } else {
+    sprintf(command,"/mnt/gentoo%s",part.mount_point);
+    if (opendir(command) != NULL)
+      umount2(command, MNT_FORCE);
+    else {
+      printf("Creating %s\n", command);
+      if (pretend == 0) {
+        if (mkdir(command, 0777) != 0) {
+          printf("Missing Permissions\n");
+          exit(EXIT_FAILURE);
+        }
+      }
+    }
     sprintf(command, "mount %s /mnt/gentoo%s", part.partition,
             part.mount_point);
   }

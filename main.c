@@ -27,9 +27,9 @@ int main(const int argc, char *argv[]) {
     initialize_directories1();
     prepare_partitions(path,true);
     extract_chroot(current);
-    initialize_directories2();
-    mount_directories();
+    exec_prog("swapoff -a");
     prepare_partitions(path,false);
+    mount_directories();
     mk_script(current);
     exec_chroot();
     clean_up();

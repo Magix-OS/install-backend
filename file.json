@@ -65,7 +65,7 @@
       "make_opt_l": 4,
       "passwd": "Supersecurepassword123",
       "portage": false,
-      "priv_escal": false,
+      "priv_escal": true,
       "rootpasswd": "Moresecurepassword123",
       "sof_firmware": false,
       "stratas": [
