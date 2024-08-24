@@ -13,7 +13,6 @@ void initialize_directories1() {
 }
 
 
-
 void format_partition(part const part) {
   char command[1024];
   if (strcmp(part.file_system, "BTRFS") == 0) {
@@ -70,7 +69,7 @@ void mount_partition(const part part) {
   if (strcmp(part.mount_point, "SWAP") == 0) {
     sprintf(command, "swapon %s", part.partition);
   } else {
-    sprintf(command,"/mnt/gentoo%s",part.mount_point);
+    sprintf(command, "/mnt/gentoo%s", part.mount_point);
     if (opendir(command) != NULL)
       umount2(command, MNT_FORCE);
     else {

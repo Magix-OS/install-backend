@@ -32,6 +32,5 @@ int main(const int argc, char *argv[]) {
     mount_directories();
     mk_script(current);
     exec_chroot();
-    clean_up();
     return 0;
 }

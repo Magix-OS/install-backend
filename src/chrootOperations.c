@@ -167,7 +167,4 @@ void exec_chroot() {
     chdir(path);
 }
 
-void clean_up() {
-    exec_prog("umount -l /mnt/gentoo/dev{/shm,/pts,} ");
-    exec_prog("umount -R /mnt/gentoo/ ");
-}
+
