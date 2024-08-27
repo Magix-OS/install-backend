@@ -17,13 +17,7 @@ void extract_chroot(install_type const install) {
     fprintf(makeconf, "MAKEOPTS=\"-j%d -l%d\"\n", install.make_opt_j, install.make_opt_l);
     fprintf(makeconf, "USE=\"${USE} %s networkmanager\"\n", install.useflags);
     fprintf(makeconf, "ACCEPT_LICENSE=\"*\"\n");
-    fprintf(makeconf, "VIDEO_CARDS=\"");
-    for (int i = 0; i < 8; i++) {
-        if (install.gpus[i]) {
-            fprintf(makeconf, "%s ", cards[i]);
-        }
-    }
-    fprintf(makeconf, "\"\n");
+    fprintf(makeconf, "VIDEO_CARDS=\"%s \"", install.gpus);
     if (install.is_uefi)
         fprintf(makeconf, "GRUB_PLATFORMS=\"efi-64\"\n");
     if (install.portage == false) {

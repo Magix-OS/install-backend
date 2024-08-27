@@ -5,9 +5,6 @@ typedef struct install_type {
 
     enum init { open_rc, system_d } init;
 
-
-    // intel, i915, nvidia, radeon, amdgpu, radeonsi, virtualbox, vmware
-    bool gpus[8];
     // arch, debian, fedora, ubuntu, voidlinux
     bool stratas[5];
     // xfs, ext4, vfat, btrfs, zfs, jfs
@@ -23,6 +20,7 @@ typedef struct install_type {
     int make_opt_j;
     int make_opt_l;
     char *useflags;
+    char *gpus;
     char *grub_disk;
     char *timezone;
     char *filename;

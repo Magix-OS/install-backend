@@ -17,15 +17,10 @@ void parse(char **output, const char *string, const json_t *config) {
 
 void output_details(install_type const current) {
     printf(
-        "Useflags: %s\nTimezone: %s\nFilename: %s\nLocales: %s\nPrimary Locale: %s\nKeyboard Layout: %s\nUsername: %s\nHostname: %s\nUserpassword: %s\nRootpassword: %s\nMakeopts: %d %d\nCards:",
+        "Useflags: %s\nTimezone: %s\nFilename: %s\nLocales: %s\nPrimary Locale: %s\nKeyboard Layout: %s\nUsername: %s\nHostname: %s\nUserpassword: %s\nRootpassword: %s\nMakeopts: %d %d\nCards:%s\n",
         current.useflags, current.timezone, current.filename, current.locales, current.locale, current.keyboard,
         current.username,
-        current.hostname, current.userpasswd, current.rootpasswd, current.make_opt_j, current.make_opt_l);
-    for (int i = 0; i < 8; i++) {
-        if (current.gpus[i]) {
-            printf(" %s", cards[i]);
-        }
-    }
+        current.hostname, current.userpasswd, current.rootpasswd, current.make_opt_j, current.make_opt_l, current.gpus);
     if (current.bedrock)
         printf("\nBedrock: Yes");
     else
@@ -132,6 +127,7 @@ install_type json_to_conf(const char *path) {
     install.linux_firmware = json_boolean_value(json_object_get(config, "linux_firmware"));
     parse(&install.timezone, "timezone", config);
     parse(&install.useflags, "useflags", config);
+    parse(&install.gpus, "gpus", config);
     parse(&install.locale, "locale", config);
     parse(&install.keyboard, "keyboard", config);
     parse(&install.username, "username", config);
@@ -168,14 +164,6 @@ install_type json_to_conf(const char *path) {
     for (int i = 0; i < json_array_size(stratas); i++)
         install.stratas[i] = json_boolean_value(json_array_get(stratas, i));
 
-    const json_t *gpus = json_object_get(config, "gpus");
-    if (!json_is_array(gpus)) {
-        fprintf(stderr, "error: is not a array\n");
-        json_decref(root);
-        exit(EXIT_FAILURE);
-    }
-    for (int i = 0; i < json_array_size(gpus); i++)
-        install.gpus[i] = json_boolean_value(json_array_get(gpus, i));
     const json_t *filesystems = json_object_get(config, "filesystems");
     if (!json_is_array(filesystems)) {
         fprintf(stderr, "error: is not a array\n");
