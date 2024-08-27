@@ -38,7 +38,7 @@
         false
       ],
       "flatpak": false,
-      "gpus": "Hello World!",
+      "gpus": "i915 intel nvidia virgl",
       "hostname": "wizardbox",
       "init": false,
       "intel_microcode": true,

@@ -13,7 +13,7 @@ void parse(char **output, const char *string, const json_t *config) {
 
 void output_details(install_type const current) {
     printf(
-        "Useflags: %s\nTimezone: %s\nFilename: %s\nLocales: %s\nPrimary Locale: %s\nKeyboard Layout: %s\nUsername: %s\nHostname: %s\nUserpassword: %s\nRootpassword: %s\nMakeopts: %d %d\nCards:%s\n",
+        "Useflags: %s\nTimezone: %s\nFilename: %s\nLocales: %s\nPrimary Locale: %s\nKeyboard Layout: %s\nUsername: %s\nHostname: %s\nUserpassword: %s\nRootpassword: %s\nMakeopts: %d %d\nCards: %s",
         current.useflags, current.timezone, current.filename, current.locales, current.locale, current.keyboard,
         current.username,
         current.hostname, current.userpasswd, current.rootpasswd, current.make_opt_j, current.make_opt_l, current.gpus);
@@ -77,12 +77,11 @@ bool is_uefi() {
     if (dir) {
         closedir(dir);
         return true;
-    } else if (ENOENT == errno)
-        return false;
-    else {
-        printf("Errno :%d, cant detect if system is UEFI or BIOS\n", errno);
-        exit(EXIT_FAILURE);
     }
+    if (ENOENT == errno)
+        return false;
+    printf("Errno :%d, cant detect if system is UEFI or BIOS\n", errno);
+    exit(EXIT_FAILURE);
 }
 
 install_type json_to_conf(const char *path) {
