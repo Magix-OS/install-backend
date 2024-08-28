@@ -1,8 +1,8 @@
 void initialize_directories() {
   DIR *dir = opendir("/mnt/gentoo");
   if (dir != NULL) {
-    system("umount -R /mnt/gentoo");
     closedir(dir);
+    exec_prog_ignore_fail("umount -R /mnt/gentoo");
   } else {
     printf("Creating /mnt and /mnt/gentoo\n");
     if (pretend == 0) {
@@ -67,19 +67,21 @@ int partitions_number(const char *path) {
 }
 
 void mount_partition(const part part) {
-  char command[1024];
+  char command[2048];
   if (strcmp(part.mount_point, "SWAP") == 0) {
     sprintf(command, "swapon %s", part.partition);
   } else {
-    sprintf(command, "/mnt/gentoo%s", part.mount_point);
-    DIR *dir = opendir(command);
+    char path[1024];
+    sprintf(path, "/mnt/gentoo%s", part.mount_point);
+    DIR *dir = opendir(path);
     if (dir != NULL) {
-      umount2(command, MNT_FORCE);
       closedir(dir);
+      sprintf(command, "umount -R %s", path);
+      exec_prog_ignore_fail(command);
     } else {
-      printf("Creating %s\n", command);
+      printf("Creating %s\n", path);
       if (pretend == 0) {
-        if (mkdir(command, 0777) != 0) {
+        if (mkdir(path, 0777) != 0) {
           printf("Missing Permissions\n");
           exit(EXIT_FAILURE);
         }

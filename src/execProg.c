@@ -11,6 +11,18 @@ void exec_prog(char *command) {
         }
     }
 }
+void exec_prog_ignore_fail(char *command) {
+  printf("Executing %s\n", command);
+  if (pretend == 0) {
+    if (system(command) != 0) {
+      printf("Something went wrong\n");
+      if (errno == EACCES) {
+        printf("Insufficient permissions, rerun with superuser perms\n");
+        exit(EXIT_FAILURE);
+      }
+    }
+  }
+}
 
 FILE *openfile(const char *filename, const char *mode) {
     printf("\nOpening: %s\n", filename);
