@@ -101,6 +101,7 @@ void prepare_partitions(const char *path, bool const root) {
           format_partition(partition);
         else
           printf("Skipping wiping %s\n", partition.partition);
+        mount_partition(partition);
       }
     } else {
       if (strcmp(partition.mount_point, "/") != 0) {
@@ -108,9 +109,10 @@ void prepare_partitions(const char *path, bool const root) {
           format_partition(partition);
         else
           printf("Skipping wiping %s\n", partition.partition);
+        mount_partition(partition);
       }
     }
-    mount_partition(partition);
+
     free(partition.mount_point);
     free(partition.partition);
     free(partition.file_system);
