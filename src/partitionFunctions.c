@@ -1,7 +1,7 @@
 void initialize_directories() {
   DIR *dir = opendir("/mnt/gentoo");
   if (dir != NULL) {
-    umount2("/mnt/gentoo", MNT_FORCE);
+    system("umount -R /mnt/gentoo");
     closedir(dir);
   } else {
     printf("Creating /mnt and /mnt/gentoo\n");

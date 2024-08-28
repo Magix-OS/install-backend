@@ -21,6 +21,10 @@ int main(const int argc, char *argv[]) {
         if (strcmp(argv[2], "-p") == 0)
             pretend = 1;
     }
+    if (argc < 1) {
+      perror("Not enough arguments");
+      return 1;
+    }
     const char *path = argv[1];
     const install_type current = json_to_conf(path);
     output_details(current);
