@@ -23,3 +23,18 @@ FILE *openfile(const char *filename, const char *mode) {
     }
     return openfile;
 }
+
+void free_install(const install_type current) {
+  free(current.filename);
+  free(current.gpus);
+  free(current.grub_disk);
+  free(current.hostname);
+  free(current.keyboard);
+  free(current.locale);
+  free(current.locales);
+  free(current.rootpasswd);
+  free(current.timezone);
+  free(current.useflags);
+  free(current.username);
+  free(current.userpasswd);
+}

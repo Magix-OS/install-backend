@@ -201,19 +201,10 @@ part json_to_part(const char *path, const int i) {
         exit(EXIT_FAILURE);
     }
     const json_t *args = json_object_get(partition, "args");
-    const json_t *paths = json_object_get(partition, "path");
-    const json_t *filesystem = json_object_get(args, "filesystem");
-    const json_t *mountpoint = json_object_get(args, "mountpoint");
     const bool wipe = json_boolean_value(json_object_get(args, "wipe"));
-    part.partition =
-            (char *) malloc(sizeof(char) * (1 + strlen(json_string_value(paths))));
-    strcpy(part.partition, json_string_value(paths));
-    part.file_system = (char *) malloc(sizeof(char) *
-                                       (1 + strlen(json_string_value(filesystem))));
-    strcpy(part.file_system, json_string_value(filesystem));
-    part.mount_point = (char *) malloc(sizeof(char) *
-                                       (1 + strlen(json_string_value(mountpoint))));
-    strcpy(part.mount_point, json_string_value(mountpoint));
+    parse(&part.partition, "path", partition);
+    parse(&part.file_system, "filesystem", args);
+    parse(&part.mount_point, "mountpoint", args);
     part.wipe = wipe;
     json_decref(root);
     return part;

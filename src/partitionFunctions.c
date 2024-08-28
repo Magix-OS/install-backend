@@ -1,7 +1,9 @@
-void initialize_directories1() {
-  if (opendir("/mnt/gentoo") != NULL)
+void initialize_directories() {
+  DIR *dir = opendir("/mnt/gentoo");
+  if (dir != NULL) {
     umount2("/mnt/gentoo", MNT_FORCE);
-  else {
+    closedir(dir);
+  } else {
     printf("Creating /mnt and /mnt/gentoo\n");
     if (pretend == 0) {
       if ((mkdir("/mnt", 0777) != 0 || mkdir("/mnt/gentoo", 0777) != 0)) {
@@ -70,9 +72,11 @@ void mount_partition(const part part) {
     sprintf(command, "swapon %s", part.partition);
   } else {
     sprintf(command, "/mnt/gentoo%s", part.mount_point);
-    if (opendir(command) != NULL)
+    DIR *dir = opendir(command);
+    if (dir != NULL) {
       umount2(command, MNT_FORCE);
-    else {
+      closedir(dir);
+    } else {
       printf("Creating %s\n", command);
       if (pretend == 0) {
         if (mkdir(command, 0777) != 0) {
@@ -97,10 +101,6 @@ void prepare_partitions(const char *path, bool const root) {
           format_partition(partition);
         else
           printf("Skipping wiping %s\n", partition.partition);
-        mount_partition(partition);
-        free(partition.mount_point);
-        free(partition.partition);
-        free(partition.file_system);
       }
     } else {
       if (strcmp(partition.mount_point, "/") != 0) {
@@ -108,12 +108,12 @@ void prepare_partitions(const char *path, bool const root) {
           format_partition(partition);
         else
           printf("Skipping wiping %s\n", partition.partition);
-        mount_partition(partition);
-        free(partition.mount_point);
-        free(partition.partition);
-        free(partition.file_system);
       }
     }
+    mount_partition(partition);
+    free(partition.mount_point);
+    free(partition.partition);
+    free(partition.file_system);
   }
 }
 
