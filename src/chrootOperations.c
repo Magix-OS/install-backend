@@ -105,7 +105,7 @@ void mk_script(install_type const install) {
     fprintf(script, "locale-gen\nenv-update && source /etc/profile\n");
     if (install.world_update)
         fprintf(script, "emerge-webrsync\nemerge --sync\nemerge --verbose --update --deep --newuse @world\n");
-    fprintf(script, "emerge -v app-portage/cpuid2cpuflags");
+    fprintf(script, "emerge -q app-portage/cpuid2cpuflags");
 
 
     if (install.linux_firmware)
