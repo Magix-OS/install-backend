@@ -49,4 +49,5 @@ void free_install(const install_type current) {
   free(current.useflags);
   free(current.username);
   free(current.userpasswd);
+  free(current.packages);
 }

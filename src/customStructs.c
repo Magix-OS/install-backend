@@ -31,6 +31,7 @@ typedef struct install_type {
     char *hostname;
     char *userpasswd;
     char *rootpasswd;
+    char *packages;
 } install_type;
 
 typedef struct part {

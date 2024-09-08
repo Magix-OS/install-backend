@@ -130,6 +130,7 @@ install_type json_to_conf(const char *path) {
     parse(&install.filename, "filename", config);
     parse(&install.userpasswd, "passwd", config);
     parse(&install.rootpasswd, "rootpasswd", config);
+    parse(&install.packages, "packages", config);
     parse(&install.grub_disk, "grub_disk", config);
     const json_t *locales = json_object_get(config, "locales");
     if (!json_is_array(locales)) {
