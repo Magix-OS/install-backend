@@ -131,7 +131,7 @@ void mk_script(install_type const install) {
   }
   if (install.flatpak)
     fprintf(script, " sys-apps/flatpak");
-  fprintf(script," %s ",install.packages);
+  fprintf(script, " %s ", install.packages);
   if (install.priv_escal == doas)
     fprintf(script, " app-admin/doas\nemerge -C sudo\nchown -c root:root "
                     "/etc/doas.conf\nchmod -c 0400 /etc/doas.conf\n");
