@@ -44,18 +44,12 @@ int partitions_number(const char *path) {
   json_t *root = json_load_file(path, 0, &error);
   if (root == NULL)
     exit(EXIT_FAILURE);
-  if (!json_is_array(root)) {
-    fprintf(stderr, "error: root is not an array\n");
+  if (!json_is_object(root)) {
+    fprintf(stderr, "error: root is not a valid file\n");
     json_decref(root);
     exit(EXIT_FAILURE);
   }
-  const json_t *data = json_array_get(root, 0);
-  if (!json_is_object(data)) {
-    fprintf(stderr, "error : not an object\n");
-    json_decref(root);
-    exit(EXIT_FAILURE);
-  }
-  const json_t *layout = json_object_get(data, "layout");
+  const json_t *layout = json_object_get(root, "layout");
   if (!json_is_array(layout)) {
     fprintf(stderr, "error: is not a array\n");
     json_decref(root);
