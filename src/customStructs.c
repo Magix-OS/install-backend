@@ -1,14 +1,11 @@
 typedef struct install_type {
-    enum priv_escal { sudo, doas } priv_escal;
-
-    enum portage { binhost, source } portage;
-
-    enum init { open_rc, system_d } init;
-
-    // arch, debian, fedora, ubuntu, voidlinux
+        // arch, debian, fedora, ubuntu, voidlinux
     bool stratas[5];
     // xfs, ext4, vfat, btrfs, zfs, jfs
     bool filesystems[6];
+    bool systemd;
+    bool use_doas;
+    bool binhost;
     bool bedrock;
     bool flatpak;
     bool is_uefi;

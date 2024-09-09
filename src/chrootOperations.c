@@ -27,7 +27,7 @@ void extract_chroot(install_type const install) {
   fprintf(makeconf, "INPUT_DEVICES=\"libinput synaptics\"\n");
   fprintf(makeconf, "ACCEPT_LICENSE=\"*\"\n");
   fprintf(makeconf, "VIDEO_CARDS=\"%s \"\n", install.gpus);
-  if (install.portage == false) {
+  if (install.binhost) {
     fprintf(
         makeconf,
         R"(# Appending getbinpkg to the list of values within the FEATURES variable
@@ -41,7 +41,7 @@ FEATURES="${FEATURES} binpkg-request-signature"
   if (pretend == 0)
     fclose(makeconf);
 
-  if (install.init == open_rc) {
+  if (install.systemd == false) {
     FILE *timezone = openfile("/mnt/gentoo/etc/timezone", "w");
     fprintf(timezone, "%s\n", install.timezone);
     if (pretend == 0)
@@ -54,7 +54,7 @@ FEATURES="${FEATURES} binpkg-request-signature"
   if (pretend == 0)
     fclose(localegen);
   FILE *localeconf;
-  if (install.init == open_rc)
+  if (install.systemd == false)
     localeconf = openfile("/mnt/gentoo/etc/env.d/02locale", "w");
   else
     localeconf = openfile("/mnt/gentoo/etc/locale.conf", "w");
@@ -78,7 +78,7 @@ FEATURES="${FEATURES} binpkg-request-signature"
   if (pretend == 0)
     fclose(hosts);
   FILE *keymaps;
-  if (install.init == open_rc) {
+  if (install.systemd == false) {
     keymaps = openfile("/mnt/gentoo/etc/conf.d/keymaps", "w");
     fprintf(keymaps, "keymap=\"%s\"\nwindowkeys=\"YES\"\nfix_euro=\"YES\"\n",
             install.keyboard);
@@ -89,7 +89,7 @@ FEATURES="${FEATURES} binpkg-request-signature"
   if (pretend == 0)
     fclose(keymaps);
 
-  if (install.priv_escal == doas) {
+  if (install.use_doas) {
     FILE *sudoas = openfile("/mnt/gentoo/etc/doas.conf", "w");
     fprintf(sudoas, "permit :wheel\n");
     if (pretend == 0)
@@ -101,9 +101,9 @@ void mk_script(install_type const install) {
   FILE *script = openfile("/mnt/gentoo/script.sh", "w+");
   chmod("/mnt/gentoo/script.sh", S_IXOTH);
   fprintf(script, "#!/bin/bash\nset -e\nsource /etc/profile\n");
-  if (install.portage == false)
+  if (install.binhost)
     fprintf(script, "getuto\n");
-  if (install.init == system_d) {
+  if (install.systemd) {
     fprintf(script, "ln -sf ../usr/share/zoneinfo/%s /etc/localtime\n",
             install.timezone);
   }
@@ -132,7 +132,7 @@ void mk_script(install_type const install) {
   if (install.flatpak)
     fprintf(script, " sys-apps/flatpak");
   fprintf(script, " %s ", install.packages);
-  if (install.priv_escal == doas)
+  if (install.use_doas)
     fprintf(script, " app-admin/doas\nemerge -C sudo\nchown -c root:root "
                     "/etc/doas.conf\nchmod -c 0400 /etc/doas.conf\n");
   else
@@ -141,7 +141,7 @@ void mk_script(install_type const install) {
                   "/etc/portage/package.use/00cpu-flags\n");
   fprintf(script, "echo -e \"%s\n%s\" | passwd -q\n", install.rootpasswd,
           install.rootpasswd);
-  if (install.init == system_d) {
+  if (install.systemd) {
     fprintf(script, "systemd-machine-id-setup\nsystemctl preset-all "
                     "--preset-mode=enable-only\n");
   }

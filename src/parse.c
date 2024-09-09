@@ -41,18 +41,18 @@ void output_details(install_type const current) {
             printf(" %s", filesystems[i]);
         }
     }
-    if (current.priv_escal == sudo)
-        printf("\nPriv tool: sudo");
-    else
+    if (current.use_doas)
         printf("\nPriv tool: doas");
-    if (current.portage == binhost)
+    else
+        printf("\nPriv tool: sudo");
+    if (current.binhost)
         printf("\nPortage packages: binary");
     else
         printf("\nPortage packages: source");
-    if (current.init == open_rc)
-        printf("\nInit: OpenRC");
-    else
+    if (current.systemd)
         printf("\nInit: Systemd");
+    else
+        printf("\nInit: OpenRC");
     if (current.world_update)
         printf("\nWorld Update: Yes");
     else
@@ -102,10 +102,10 @@ install_type json_to_conf(const char *path) {
         exit(EXIT_FAILURE);
     }
     install.is_uefi = is_uefi();
-    install.priv_escal = json_boolean_value(json_object_get(config, "priv_escal"));
-    install.kernel_bin = json_boolean_value(json_object_get(config, "kernel"));
-    install.portage = json_boolean_value(json_object_get(config, "portage"));
-    install.init = json_boolean_value(json_object_get(config, "init"));
+    install.use_doas = json_boolean_value(json_object_get(config, "use_doas"));
+    install.kernel_bin = json_boolean_value(json_object_get(config, "binary_kernel"));
+    install.binhost = json_boolean_value(json_object_get(config, "binhost"));
+    install.systemd = json_boolean_value(json_object_get(config, "systemd"));
     install.world_update = json_boolean_value(json_object_get(config, "world_update"));
     install.make_opt_j = json_integer_value(json_object_get(config, "make_opt_j"));
     install.make_opt_l = json_integer_value(json_object_get(config, "make_opt_l"));
