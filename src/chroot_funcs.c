@@ -4,15 +4,33 @@
 
 #include "chroot_funcs.h"
 #include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
-
 void change_priority(int const priority) {
+  char buffer[1024];
   FILE *gentoobinhost =
-      openfile("/mnt/gentoo/etc/portage/binrepos.conf/gentoobinhost.conf", "a");
-  fprintf(gentoobinhost, "priority = %d\n", priority);
-  if (pretend == 0)
+      openfile("/mnt/gentoo/etc/portage/binrepos.conf/gentoobinhost.conf", "r");
+  FILE *tempFile = openfile(
+      "/mnt/gentoo/etc/portage/binrepos.conf/gentoobinhost.conf.tmp", "w");
+
+  char pattern[] = "priority = ";
+
+  while (fgets(buffer, sizeof(buffer), gentoobinhost)) {
+    if (strncmp(buffer, pattern, strlen(pattern)) == 0) {
+      fprintf(tempFile, "%s%d\n", pattern, priority);
+    } else {
+      fputs(buffer, tempFile);
+    }
+  }
+  if (pretend == 0) {
     fclose(gentoobinhost);
+    fclose(tempFile);
+    remove("/mnt/gentoo/etc/portage/binrepos.conf/gentoobinhost.conf");
+    rename("/mnt/gentoo/etc/portage/binrepos.conf/gentoobinhost.conf.tmp",
+           "/mnt/gentoo/etc/portage/binrepos.conf/gentoobinhost.conf");
+  }
+
 }
 
 void extract_chroot(install_type const install) {
