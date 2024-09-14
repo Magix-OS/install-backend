@@ -1,3 +1,13 @@
+//
+// Created by crystal on 14/09/24.
+//
+
+#include "partition_funcs.h"
+#include "parse_funcs.h"
+#include <dirent.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
 void initialize_directories() {
   DIR *dir = opendir("/mnt/gentoo");
   if (dir != NULL) {
@@ -13,7 +23,6 @@ void initialize_directories() {
     }
   }
 }
-
 
 void format_partition(part const part) {
   char command[1024];
@@ -37,27 +46,6 @@ void format_partition(part const part) {
     exit(EXIT_FAILURE);
   }
   exec_prog(command);
-}
-
-int partitions_number(const char *path) {
-  json_error_t error;
-  json_t *root = json_load_file(path, 0, &error);
-  if (root == NULL)
-    exit(EXIT_FAILURE);
-  if (!json_is_object(root)) {
-    fprintf(stderr, "error: root is not a valid file\n");
-    json_decref(root);
-    exit(EXIT_FAILURE);
-  }
-  const json_t *layout = json_object_get(root, "layout");
-  if (!json_is_array(layout)) {
-    fprintf(stderr, "error: is not a array\n");
-    json_decref(root);
-    exit(EXIT_FAILURE);
-  }
-  const int num = json_array_size(layout);
-  json_decref(root);
-  return num;
 }
 
 void mount_partition(const part part) {
@@ -87,9 +75,8 @@ void mount_partition(const part part) {
   exec_prog(command);
 }
 
-void prepare_partitions(const char *path, bool const root) {
-  const int part_num = partitions_number(path);
-  for (int i = 0; i < part_num; i++) {
+void prepare_partitions(const char *path, bool const root, const int num) {
+  for (int i = 0; i < num; i++) {
     const part partition = json_to_part(path, i);
     if (root == true) {
       if (strcmp(partition.mount_point, "/") == 0) {

@@ -1,3 +1,12 @@
+//
+// Created by crystal on 14/09/24.
+//
+
+#include "chroot_funcs.h"
+#include <stdlib.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 void change_priority(int const priority) {
   FILE *gentoobinhost =
       openfile("/mnt/gentoo/etc/portage/binrepos.conf/gentoobinhost.conf", "a");

@@ -1,3 +1,5 @@
-project('Magix Install Backend', 'c')
+project('Magix Install Backend', 'c', version : '0.0.1 PR')
 janssondep = dependency('jansson')
-executable('install-backend', 'main.c', dependencies : janssondep)
+incdir = include_directories('include')
+src_files = files('main.c', 'src/misc.c', 'src/parse_funcs.c', 'src/partition_funcs.c', 'src/chroot_funcs.c')
+executable('install-backend', src_files, dependencies : janssondep, include_directories : incdir)
