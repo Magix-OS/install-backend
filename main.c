@@ -26,7 +26,7 @@ int main(const int argc, char *argv[]) {
       return 1;
     }
     const char *path = argv[1];
-    const install_type current = json_to_conf(path);
+    const install_type current = json_to_conf(pat h);
     output_details(current);
     initialize_directories();
     prepare_partitions(path, true);
