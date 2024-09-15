@@ -6,7 +6,7 @@
 int main(const int argc, char *argv[]) {
   if (argc > 2) {
     if (strcmp(argv[2], "-p") == 0)
-      pretend = 1;
+      pretend = true;
   }
   if (argc < 1) {
     perror("Not enough arguments");

@@ -6,14 +6,18 @@
 #define MISC_H
 #include <stdbool.h>
 #include <stdio.h>
+#define STRATAS_NUMBER 5
+#define FS_NUMBER 6
+#define PATH_MAX 1024
+#define COMMAND_MAX PATH_MAX * 2
 extern bool pretend;
 extern const char *stratas[];
 extern const char *filesystems[];
 typedef struct install_type {
   // arch, debian, fedora, ubuntu, void linux
-  bool stratas[5];
+  bool stratas[STRATAS_NUMBER];
   // xfs, ext4, vfat, btrfs, zfs, jfs
-  bool filesystems[6];
+  bool filesystems[FS_NUMBER];
   bool systemd;
   bool use_doas;
   bool binhost;

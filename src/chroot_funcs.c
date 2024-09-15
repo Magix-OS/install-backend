@@ -23,7 +23,7 @@ void change_priority(int const priority) {
       fputs(buffer, tempFile);
     }
   }
-  if (pretend == 0) {
+  if (pretend == false) {
     fclose(gentoobinhost);
     fclose(tempFile);
     remove("/mnt/gentoo/etc/portage/binrepos.conf/gentoobinhost.conf");
@@ -65,20 +65,20 @@ FEATURES="${FEATURES} binpkg-request-signature"
     change_priority(9999);
   } else
     change_priority(1);
-  if (pretend == 0)
+  if (pretend == false)
     fclose(makeconf);
 
   if (install.systemd == false) {
     FILE *timezone = openfile("/mnt/gentoo/etc/timezone", "w");
     fprintf(timezone, "%s\n", install.timezone);
-    if (pretend == 0)
+    if (pretend == false)
       fclose(timezone);
   }
 
   FILE *localegen = openfile("/mnt/gentoo/etc/locale.gen", "w");
   ;
   fprintf(localegen, "%s", install.locales);
-  if (pretend == 0)
+  if (pretend == false)
     fclose(localegen);
   FILE *localeconf;
   if (install.systemd == false)
@@ -87,22 +87,22 @@ FEATURES="${FEATURES} binpkg-request-signature"
     localeconf = openfile("/mnt/gentoo/etc/locale.conf", "w");
 
   fprintf(localeconf, "LANG=\"%s\"\nLC_COLLATE=\"C.UTF-8\"\n", install.locale);
-  if (pretend == 0)
+  if (pretend == false)
     fclose(localeconf);
 
   FILE *installkernel =
       openfile("/mnt/gentoo/etc/portage/package.use/installkernel", "w");
   fprintf(installkernel, "sys-kernel/installkernel grub dracut\n");
-  if (pretend == 0)
+  if (pretend == false)
     fclose(installkernel);
   FILE *hostname = openfile("/mnt/gentoo/etc/hostname", "w");
   fprintf(hostname, "%s\n", install.hostname);
-  if (pretend == 0)
+  if (pretend == false)
     fclose(hostname);
   FILE *hosts = openfile("/mnt/gentoo/etc/hosts", "w");
   fprintf(hosts, "127.0.0.1     %s.homenetwork %s localhost\n",
           install.hostname, install.hostname);
-  if (pretend == 0)
+  if (pretend == false)
     fclose(hosts);
   FILE *keymaps;
   if (install.systemd == false) {
@@ -113,13 +113,13 @@ FEATURES="${FEATURES} binpkg-request-signature"
     keymaps = openfile("/mnt/gentoo/etc/vconsole.conf", "w");
     fprintf(keymaps, "KEYMAP=\"%s\"\n", install.keyboard);
   }
-  if (pretend == 0)
+  if (pretend == false)
     fclose(keymaps);
 
   if (install.use_doas) {
     FILE *sudoas = openfile("/mnt/gentoo/etc/doas.conf", "w");
     fprintf(sudoas, "permit :wheel\n");
-    if (pretend == 0)
+    if (pretend == false)
       fclose(keymaps);
   }
 }
@@ -151,7 +151,7 @@ void mk_script(install_type const install) {
   else
     fprintf(script, " sys-kernel/gentoo-kernel");
 
-  for (int i = 0; i < 6; i++) {
+  for (int i = 0; i < FS_NUMBER; i++) {
     if (install.filesystems[i]) {
       fprintf(script, " %s", filesystems[i]);
     }
@@ -190,7 +190,7 @@ void mk_script(install_type const install) {
             "su %s -c \"flatpak remote-add --user --if-not-exists flathub "
             "https://flathub.org/repo/flathub.flatpakrepo\"",
             install.username);
-  if (pretend == 0)
+  if (pretend == false)
     fclose(script);
 }
 

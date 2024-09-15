@@ -34,13 +34,13 @@ void output_details(install_type const current) {
   else
     printf("\nBinary Kernel: No");
   printf("\nStratas:");
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < STRATAS_NUMBER; i++) {
     if (current.stratas[i]) {
       printf(" %s", stratas[i]);
     }
   }
   printf("\nFilesystems:");
-  for (int i = 0; i < 6; i++) {
+  for (int i = 0; i < FS_NUMBER; i++) {
     if (current.filesystems[i]) {
       printf(" %s", filesystems[i]);
     }
@@ -157,7 +157,7 @@ install_type json_to_conf(const char *path) {
     json_decref(root);
     exit(EXIT_FAILURE);
   }
-  for (int i = 0; i < json_array_size(strata); i++)
+  for (int i = 0; i < STRATAS_NUMBER; i++)
     install.stratas[i] = json_boolean_value(json_array_get(strata, i));
 
   const json_t *fs = json_object_get(config, "filesystems");

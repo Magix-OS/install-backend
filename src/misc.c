@@ -9,15 +9,24 @@
 #include <sys/mount.h>
 #include <sys/stat.h>
 #include <unistd.h>
+/*========================Global Variables========================*/
+// Set to true to just output the steps that would be made, and false to make
+// changes to the disk
+bool pretend = false;
+// Which Stratas to install (Bedrock Linux related) TODO actually use it
+const char *stratas[STRATAS_NUMBER] = {"arch", "debian", "fedora", "ubuntu",
+                                       "voidlinux"};
+// Which filesystem packages to install
+const char *filesystems[FS_NUMBER] = {"sys-fs/xfsprogs",   "sys-fs/e2fsprogs",
+                                      "sys-fs/dosfstools", "sys-fs/btrfs-progs",
+                                      "sys-fs/zfs",        "sys-fs/jfsutils"};
+/*========================Global Variables========================*/
 
-bool pretend = 0;
-const char *stratas[] = {"arch", "debian", "fedora", "ubuntu", "voidlinux"};
-const char *filesystems[] = {"sys-fs/xfsprogs",   "sys-fs/e2fsprogs",
-                             "sys-fs/dosfstools", "sys-fs/btrfs-progs",
-                             "sys-fs/zfs",        "sys-fs/jfsutils"};
+// Wrapper around the system() function. Takes into consideration
+// the pretend global variable
 void exec_prog(char *command) {
   printf("Executing %s\n", command);
-  if (pretend == 0) {
+  if (pretend == false) {
     if (system(command) != 0) {
       printf("Something went wrong\n");
       if (errno == EACCES)
@@ -26,9 +35,11 @@ void exec_prog(char *command) {
     }
   }
 }
+// Same as before but ignore the case where the command exists with a non 0
+// status
 void exec_prog_ignore_fail(char *command) {
   printf("Executing %s\n", command);
-  if (pretend == 0) {
+  if (pretend == false) {
     if (system(command) != 0) {
       printf("Something went wrong\n");
       if (errno == EACCES) {
@@ -38,10 +49,11 @@ void exec_prog_ignore_fail(char *command) {
     }
   }
 }
-
+// Wrapper around the fopen() function. Takes into consideration
+// the pretend global variable
 FILE *openfile(const char *filename, const char *mode) {
   printf("\nOpening: %s\n", filename);
-  if (pretend == 1)
+  if (pretend == true)
     return stdout;
   FILE *openfile = fopen(filename, mode);
   if (openfile == NULL) {
@@ -50,7 +62,7 @@ FILE *openfile(const char *filename, const char *mode) {
   }
   return openfile;
 }
-
+// Frees up the installation variable to avoid memory leaks
 void free_install(const install_type current) {
   free(current.filename);
   free(current.gpus);
@@ -66,6 +78,8 @@ void free_install(const install_type current) {
   free(current.userpasswd);
   free(current.packages);
 }
+// Checks if the current running system is UEFI or BIOS, returns true for UEFI
+// and false for BIOS
 bool is_uefi() {
   DIR *dir = opendir("/sys/firmware/efi");
   if (dir) {

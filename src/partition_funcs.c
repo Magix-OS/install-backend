@@ -8,14 +8,17 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+
+// Unmounts all directories under /mnt/gentoo, and creates /mnt and /mnt/gentoo
+// if they don't exist
 void initialize_directories() {
+  exec_prog_ignore_fail("umount -R /mnt/gentoo");
   DIR *dir = opendir("/mnt/gentoo");
-  if (dir != NULL) {
+  if (dir != NULL)
     closedir(dir);
-    exec_prog_ignore_fail("umount -R /mnt/gentoo");
-  } else {
+  else {
     printf("Creating /mnt and /mnt/gentoo\n");
-    if (pretend == 0) {
+    if (pretend == false) {
       if ((mkdir("/mnt", 0777) != 0 || mkdir("/mnt/gentoo", 0777) != 0)) {
         printf("Missing Permissions\n");
         exit(EXIT_FAILURE);
@@ -23,9 +26,9 @@ void initialize_directories() {
     }
   }
 }
-
+// Formats the passed partition
 void format_partition(part const part) {
-  char command[1024];
+  char command[COMMAND_MAX];
   if (strcmp(part.file_system, "BTRFS") == 0) {
     printf("Formatting %s as BTRFS\n", part.partition);
     sprintf(command, "mkfs.btrfs %s", part.partition);
@@ -47,13 +50,13 @@ void format_partition(part const part) {
   }
   exec_prog(command);
 }
-
+// Mount passed partition, SWAP partitions do not get mounted
 void mount_partition(const part part) {
-  char command[2048];
+  char command[COMMAND_MAX];
   if (strcmp(part.mount_point, "SWAP") == 0) {
     sprintf(command, "swapon %s", part.partition);
   } else {
-    char path[1024];
+    char path[PATH_MAX];
     sprintf(path, "/mnt/gentoo%s", part.mount_point);
     DIR *dir = opendir(path);
     if (dir != NULL) {
@@ -62,7 +65,7 @@ void mount_partition(const part part) {
       exec_prog_ignore_fail(command);
     } else {
       printf("Creating %s\n", path);
-      if (pretend == 0) {
+      if (pretend == false) {
         if (mkdir(path, 0777) != 0) {
           printf("Missing Permissions\n");
           exit(EXIT_FAILURE);
@@ -74,7 +77,8 @@ void mount_partition(const part part) {
   }
   exec_prog(command);
 }
-
+// Uses json_to_part() to parse the provided JSON for partitions, formats and
+// mounts them
 void prepare_partitions(const char *path, bool const root, const int num) {
   for (int i = 0; i < num; i++) {
     const part partition = json_to_part(path, i);
@@ -101,7 +105,7 @@ void prepare_partitions(const char *path, bool const root, const int num) {
     free(partition.file_system);
   }
 }
-
+// Mounts necessary partitions for correct chroot operations
 void mount_directories() {
   exec_prog("cp --dereference /etc/resolv.conf /mnt/gentoo/etc/");
   exec_prog("mount --types proc /proc /mnt/gentoo/proc");
