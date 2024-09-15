@@ -7,4 +7,4 @@ void change_priority(int const priority);
 void extract_chroot(install_type const install);
 void mk_script(install_type const install);
 void exec_chroot();
-#endif //CHROOT_FUNCS_H
+#endif // CHROOT_FUNCS_H
