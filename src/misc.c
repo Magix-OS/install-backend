@@ -1,6 +1,4 @@
-//
-// Created by crystal on 14/09/24.
-//
+
 
 #include "misc.h"
 #include <dirent.h>
@@ -57,7 +55,7 @@ FILE *openfile(const char *filename, const char *mode) {
     return stdout;
   FILE *openfile = fopen(filename, mode);
   if (openfile == NULL) {
-    printf("\n Can't open %s\n", filename);
+    printf("\nCan't open %s\n", filename);
     exit(EXIT_FAILURE); // or abort()
   }
   return openfile;

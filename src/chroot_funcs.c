@@ -1,12 +1,11 @@
-//
-// Created by crystal on 14/09/24.
-//
+
 
 #include "chroot_funcs.h"
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
+// Changes the priority of the binhost in gentoobinhost.conf
 void change_priority(int const priority) {
   char buffer[1024];
   FILE *gentoobinhost =
@@ -32,7 +31,15 @@ void change_priority(int const priority) {
   }
 
 }
-
+/*Extracts the stage4 into the /mnt/gentoo directory, modifies the files
+ * according to user choices. Affected files : /mnt/gentoo/etc/portage/make.conf
+ * /mnt/gentoo/etc/portage/binrepos.conf/gentoobinhost.conf
+ * /mnt/gentoo/etc/timezone /mnt/gentoo/etc/locale.gen
+ * /mnt/gentoo/etc/env.d/02locale /mnt/gentoo/etc/locale.conf
+ * /mnt/gentoo/etc/portage/package.use/installkernel /mnt/gentoo/etc/hostname
+ * /mnt/gentoo/etc/hosts /mnt/gentoo/etc/conf.d/keymaps
+ * /mnt/gentoo/etc/vconsole.conf /mnt/gentoo/etc/doas.conf
+ */
 void extract_chroot(install_type const install) {
   char command[1024];
   char path[256] = {0};
@@ -77,7 +84,7 @@ FEATURES="${FEATURES} binpkg-request-signature"
 
   FILE *localegen = openfile("/mnt/gentoo/etc/locale.gen", "w");
   ;
-  fprintf(localegen, "%s", install.locales);
+  fprintf(localegen, "%s\n", install.locales);
   if (pretend == false)
     fclose(localegen);
   FILE *localeconf;
@@ -123,7 +130,7 @@ FEATURES="${FEATURES} binpkg-request-signature"
       fclose(keymaps);
   }
 }
-
+// Creates the post-chroot script in /mnt/gentoo/script.sh
 void mk_script(install_type const install) {
   FILE *script = openfile("/mnt/gentoo/script.sh", "w+");
   chmod("/mnt/gentoo/script.sh", S_IXOTH);
@@ -193,17 +200,9 @@ void mk_script(install_type const install) {
   if (pretend == false)
     fclose(script);
 }
-
+// Changes directories to /mnt/gentoo, chroots, and executes the script.sh file
 void exec_chroot() {
-  char path[256] = {0};
-  if (getcwd(path, sizeof(path)) == NULL) {
-    perror("getcwd");
-    exit(EXIT_FAILURE); // or abort()
-  }
-  printf("\nYou are here :%s\n", path);
   chdir("/mnt/gentoo");
   chroot("/mnt/gentoo");
   exec_prog("./script.sh");
-  exec_prog("exit");
-  chdir(path);
 }

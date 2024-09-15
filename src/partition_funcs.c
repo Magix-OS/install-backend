@@ -1,6 +1,4 @@
-//
-// Created by crystal on 14/09/24.
-//
+
 
 #include "partition_funcs.h"
 #include "parse_funcs.h"
@@ -79,10 +77,10 @@ void mount_partition(const part part) {
 }
 // Uses json_to_part() to parse the provided JSON for partitions, formats and
 // mounts them
-void prepare_partitions(const char *path, bool const root, const int num) {
+void prepare_partitions(json_t *root, bool const root_part, const int num) {
   for (int i = 0; i < num; i++) {
-    const part partition = json_to_part(path, i);
-    if (root == true) {
+    const part partition = json_to_part(root, i);
+    if (root_part == true) {
       if (strcmp(partition.mount_point, "/") == 0) {
         if (partition.wipe)
           format_partition(partition);

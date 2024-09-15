@@ -1,6 +1,4 @@
-//
-// Created by crystal on 14/09/24.
-//
+
 
 #ifndef CHROOT_FUNCS_H
 #define CHROOT_FUNCS_H

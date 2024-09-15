@@ -1,10 +1,9 @@
-//
-// Created by crystal on 14/09/24.
-//
-
 #include "parse_funcs.h"
 #include <stdlib.h>
 #include <string.h>
+
+// Parses string item from JSON object, allocates enough memory and puts it into
+// char **output
 
 void parse(char **output, const char *string, const json_t *config) {
   *output = (char *)malloc(
@@ -12,15 +11,16 @@ void parse(char **output, const char *string, const json_t *config) {
       (1 + strlen(json_string_value(json_object_get(config, string)))));
   strcpy(*output, json_string_value(json_object_get(config, string)));
 }
-
+// Outputs the current install information in a human-readable way
 void output_details(install_type const current) {
   printf("Useflags: %s\nTimezone: %s\nFilename: %s\nLocales: %s\nPrimary "
          "Locale: %s\nKeyboard Layout: %s\nUsername: %s\nHostname: "
-         "%s\nUserpassword: %s\nRootpassword: %s\nMakeopts: %d %d\nCards: %s",
+         "%s\nUserpassword: %s\nRootpassword: %s\nMakeopts: %d %d\nCards: "
+         "%s\nNumber of partitions: %d  ",
          current.useflags, current.timezone, current.filename, current.locales,
          current.locale, current.keyboard, current.username, current.hostname,
          current.userpasswd, current.rootpasswd, current.make_opt_j,
-         current.make_opt_l, current.gpus);
+         current.make_opt_l, current.gpus, current.partitions_number);
   if (current.bedrock)
     printf("\nBedrock: Yes");
   else
@@ -75,10 +75,8 @@ void output_details(install_type const current) {
     printf("\nLinux Firmware: No");
   printf("\nGrub Disk : %s", current.grub_disk);
 }
-
-install_type json_to_conf(const char *path) {
-  json_error_t error;
-  json_t *root = json_load_file(path, 0, &error);
+// Parses the JSON object in json_t *root and returns an install_type variable
+install_type json_to_conf(json_t *root) {
   install_type install;
   if (root == NULL)
     exit(EXIT_FAILURE);
@@ -168,14 +166,12 @@ install_type json_to_conf(const char *path) {
   }
   for (int i = 0; i < json_array_size(fs); i++)
     install.filesystems[i] = json_boolean_value(json_array_get(fs, i));
-  json_decref(root);
   return install;
 }
-
-part json_to_part(const char *path, const int i) {
-  json_error_t error;
+// Parses the JSON object in json_t *root and returns a part variable that
+// contains the options for the partition of index i
+part json_to_part(json_t *root, const int i) {
   part part;
-  json_t *root = json_load_file(path, 0, &error);
   if (root == NULL)
     exit(EXIT_FAILURE);
   if (!json_is_object(root)) {
@@ -202,6 +198,5 @@ part json_to_part(const char *path, const int i) {
   parse(&part.file_system, "filesystem", args);
   parse(&part.mount_point, "mountpoint", args);
   part.wipe = wipe;
-  json_decref(root);
   return part;
 }
