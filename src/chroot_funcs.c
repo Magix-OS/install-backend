@@ -29,7 +29,6 @@ void change_priority(int const priority) {
     rename("/mnt/gentoo/etc/portage/binrepos.conf/gentoobinhost.conf.tmp",
            "/mnt/gentoo/etc/portage/binrepos.conf/gentoobinhost.conf");
   }
-
 }
 /*Extracts the stage4 into the /mnt/gentoo directory, modifies the files
  * according to user choices. Affected files : /mnt/gentoo/etc/portage/make.conf
