@@ -13,13 +13,13 @@ extern const char *stratas[];
 extern const char *filesystems[];
 typedef struct install_type {
   // arch, debian, fedora, ubuntu, void linux
-  bool stratas[STRATAS_NUMBER];
+  // bool stratas[STRATAS_NUMBER];
   // xfs, ext4, vfat, btrfs, zfs, jfs
   bool filesystems[FS_NUMBER];
   bool systemd;
   bool use_doas;
   bool binhost;
-  bool bedrock;
+  //bool bedrock;
   bool flatpak;
   bool is_uefi;
   bool kernel_bin;

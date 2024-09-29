@@ -21,10 +21,10 @@ void output_details(install_type const current) {
          current.locale, current.keyboard, current.username, current.hostname,
          current.userpasswd, current.rootpasswd, current.make_opt_j,
          current.make_opt_l, current.gpus, current.partitions_number);
-  if (current.bedrock)
-    printf("\nBedrock: Yes");
-  else
-    printf("\nBedrock: No");
+  //if (current.bedrock)
+    //printf("\nBedrock: Yes");
+  //else
+    //printf("\nBedrock: No");
   if (current.flatpak)
     printf("\nFlatpak: Yes");
   else
@@ -34,11 +34,11 @@ void output_details(install_type const current) {
   else
     printf("\nBinary Kernel: No");
   printf("\nStratas:");
-  for (int i = 0; i < STRATAS_NUMBER; i++) {
-    if (current.stratas[i]) {
-      printf(" %s", stratas[i]);
-    }
-  }
+  // for (int i = 0; i < STRATAS_NUMBER; i++) {
+  //   if (current.stratas[i]) {
+  //     printf(" %s", stratas[i]);
+  //   }
+  // }
   printf("\nFilesystems:");
   for (int i = 0; i < FS_NUMBER; i++) {
     if (current.filesystems[i]) {
@@ -106,10 +106,10 @@ install_type json_to_conf(json_t *root) {
   install.world_update =
       json_boolean_value(json_object_get(config, "world_update"));
   install.make_opt_j =
-      json_integer_value(json_object_get(config, "make_opt_j"));
+      (int) json_integer_value(json_object_get(config, "make_opt_j"));
   install.make_opt_l =
-      json_integer_value(json_object_get(config, "make_opt_l"));
-  install.bedrock = json_boolean_value(json_object_get(config, "bedrock"));
+      (int) json_integer_value(json_object_get(config, "make_opt_l"));
+  //install.bedrock = json_boolean_value(json_object_get(config, "bedrock"));
   install.flatpak = json_boolean_value(json_object_get(config, "flatpak"));
   install.intel_microcode =
       json_boolean_value(json_object_get(config, "intel_microcode"));
@@ -129,7 +129,7 @@ install_type json_to_conf(json_t *root) {
   parse(&install.rootpasswd, "rootpasswd", config);
   parse(&install.packages, "packages", config);
   parse(&install.grub_disk, "grub_disk", config);
-  install.partitions_number = json_array_size(layout);
+  install.partitions_number = (int) json_array_size(layout);
   const json_t *locales = json_object_get(config, "locales");
   if (!json_is_array(locales)) {
     fprintf(stderr, "error: is not a array\n");
@@ -138,8 +138,7 @@ install_type json_to_conf(json_t *root) {
   }
   int locale_length = 0;
   for (int i = 0; i < json_array_size(locales); i++)
-    locale_length = locale_length + 1 +
-                    strlen(json_string_value(json_array_get(locales, i)));
+    locale_length = locale_length + 1 + (int) strlen(json_string_value(json_array_get(locales, i)));
 
   install.locales = (char *)malloc(sizeof(char) * (1 + locale_length));
   sprintf(install.locales, "%s\n",
@@ -155,8 +154,8 @@ install_type json_to_conf(json_t *root) {
     json_decref(root);
     exit(EXIT_FAILURE);
   }
-  for (int i = 0; i < STRATAS_NUMBER; i++)
-    install.stratas[i] = json_boolean_value(json_array_get(strata, i));
+  //for (int i = 0; i < STRATAS_NUMBER; i++)
+    //install.stratas[i] = json_boolean_value(json_array_get(strata, i));
 
   const json_t *fs = json_object_get(config, "filesystems");
   if (!json_is_array(fs)) {
